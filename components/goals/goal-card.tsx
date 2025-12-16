@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Goal } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { GoalDetailDialog } from "./goal-detail-dialog";
+import { MilestoneDetailDialog } from "./milestone-detail-dialog";
 
 interface GoalCardProps {
     goal: Goal;
@@ -18,6 +19,7 @@ interface GoalCardProps {
 
 export function GoalCard({ goal, onUpdate, onDelete }: GoalCardProps) {
     const [detailOpen, setDetailOpen] = useState(false);
+    const [selectedMilestoneIdx, setSelectedMilestoneIdx] = useState<number | null>(null);
 
     const handleMilestoneToggle = (index: number) => {
         const newMilestones = [...goal.milestones];
@@ -42,11 +44,24 @@ export function GoalCard({ goal, onUpdate, onDelete }: GoalCardProps) {
                 onOpenChange={setDetailOpen}
                 onUpdate={onUpdate}
             />
-            <Card className="hover:bg-accent/5 transition-colors group">
+            {selectedMilestoneIdx !== null && (
+                <MilestoneDetailDialog
+                    goal={goal}
+                    milestoneIndex={selectedMilestoneIdx}
+                    open={selectedMilestoneIdx !== null}
+                    onOpenChange={(open) => !open && setSelectedMilestoneIdx(null)}
+                    onUpdate={onUpdate}
+                />
+            )}
+
+            <Card className="hover:bg-accent/5 transition-colors group relative">
                 <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
-                        <div>
-                            <CardTitle className="text-lg">{goal.title}</CardTitle>
+                        <div
+                            className="cursor-pointer"
+                            onClick={() => setDetailOpen(true)}
+                        >
+                            <CardTitle className="text-lg hover:underline decoration-dotted underline-offset-4">{goal.title}</CardTitle>
                             {goal.targetDate && (
                                 <CardDescription>Target: {format(new Date(goal.targetDate), "P")}</CardDescription>
                             )}
@@ -55,9 +70,6 @@ export function GoalCard({ goal, onUpdate, onDelete }: GoalCardProps) {
                             <Badge variant={goal.completed ? "default" : "outline"} className={goal.completed ? "bg-green-500 hover:bg-green-600" : ""}>
                                 {goal.completed ? "Completed" : "In Progress"}
                             </Badge>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-primary" onClick={() => setDetailOpen(true)}>
-                                <Eye className="h-4 w-4" />
-                            </Button>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(goal.id)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
@@ -78,26 +90,36 @@ export function GoalCard({ goal, onUpdate, onDelete }: GoalCardProps) {
                             <p className="text-xs font-medium text-muted-foreground">Milestones</p>
                             <div className="space-y-2">
                                 {goal.milestones.map((milestone, idx) => (
-                                    <div key={idx} className="flex items-center space-x-2">
+                                    <div key={idx} className="flex items-center space-x-2 group/milestone">
                                         <Checkbox
                                             id={`milestone-${goal.id}-${idx}`}
                                             checked={milestone.completed}
                                             onCheckedChange={() => handleMilestoneToggle(idx)}
                                         />
-                                        <label
-                                            htmlFor={`milestone-${goal.id}-${idx}`}
-                                            className={cn(
-                                                "text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70",
-                                                milestone.completed && "line-through text-muted-foreground"
-                                            )}
+                                        <div
+                                            className="flex-1 flex items-center justify-between cursor-pointer hover:bg-accent/50 p-1.5 rounded-md transition-colors"
+                                            onClick={() => setSelectedMilestoneIdx(idx)}
                                         >
-                                            {milestone.title}
-                                            {milestone.targetDate && (
-                                                <span className="ml-2 text-[10px] text-muted-foreground border px-1 rounded bg-secondary/30">
-                                                    {format(new Date(milestone.targetDate), "MMM d")}
-                                                </span>
-                                            )}
-                                        </label>
+                                            <label
+                                                className={cn(
+                                                    "text-sm font-medium leading-none cursor-pointer",
+                                                    milestone.completed && "line-through text-muted-foreground"
+                                                )}
+                                            >
+                                                {milestone.title}
+                                                {milestone.targetDate && (
+                                                    <span className="ml-2 text-[10px] text-muted-foreground border px-1 rounded bg-secondary/30">
+                                                        {format(new Date(milestone.targetDate), "MMM d")}
+                                                    </span>
+                                                )}
+                                                {(milestone.notes || milestone.resources?.length) && (
+                                                    <span className="ml-2 text-[10px] text-primary/70">
+                                                        • Details
+                                                    </span>
+                                                )}
+                                            </label>
+                                            <Eye className="h-3 w-3 text-muted-foreground opacity-0 group-hover/milestone:opacity-100 transition-opacity" />
+                                        </div>
                                     </div>
                                 ))}
                             </div>

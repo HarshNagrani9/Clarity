@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Goal } from "@/lib/types";
 
 export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "completed" | "progress">) => void }) {
@@ -21,19 +22,22 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
     const [title, setTitle] = useState("");
     const [targetDate, setTargetDate] = useState("");
 
-    // Milestones include an optional date now
-    const [milestones, setMilestones] = useState<{ title: string; targetDate?: string }[]>([]);
+    // Milestones include an optional date and description now
+    const [milestones, setMilestones] = useState<{ title: string; targetDate?: string; description?: string }[]>([]);
     const [newMilestone, setNewMilestone] = useState("");
     const [newMilestoneDate, setNewMilestoneDate] = useState("");
+    const [newMilestoneDesc, setNewMilestoneDesc] = useState("");
 
     const handleAddMilestone = () => {
         if (newMilestone.trim()) {
             setMilestones([...milestones, {
                 title: newMilestone.trim(),
-                targetDate: newMilestoneDate || undefined
+                targetDate: newMilestoneDate || undefined,
+                description: newMilestoneDesc.trim() || undefined
             }]);
             setNewMilestone("");
             setNewMilestoneDate("");
+            setNewMilestoneDesc("");
         }
     };
 
@@ -49,6 +53,7 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
             milestones: milestones.map(m => ({
                 title: m.title,
                 targetDate: m.targetDate,
+                description: m.description,
                 completed: false
             }))
         });
@@ -58,6 +63,7 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
         setMilestones([]);
         setNewMilestone("");
         setNewMilestoneDate("");
+        setNewMilestoneDesc("");
     };
 
     return (
@@ -67,7 +73,7 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
                     <Plus className="h-4 w-4" /> New Goal
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[450px]">
+            <DialogContent className="sm:max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Set New Goal</DialogTitle>
                     <DialogDescription>
@@ -97,41 +103,45 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
                         />
                     </div>
 
-                    <div className="border-t pt-4">
-                        <Label className="block mb-2 font-semibold">Milestones</Label>
-                        <div className="flex gap-2 mb-2">
-                            <Input
-                                value={newMilestone}
-                                onChange={(e) => setNewMilestone(e.target.value)}
-                                placeholder="Milestone title..."
-                                className="flex-1"
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                        handleAddMilestone();
-                                    }
-                                }}
+                    <div className="border-t pt-4 space-y-3">
+                        <Label className="block font-semibold">Milestones</Label>
+
+                        <div className="space-y-2 bg-secondary/10 p-3 rounded-lg border">
+                            <div className="flex gap-2">
+                                <Input
+                                    value={newMilestone}
+                                    onChange={(e) => setNewMilestone(e.target.value)}
+                                    placeholder="Milestone title..."
+                                    className="flex-1"
+                                />
+                                <Input
+                                    type="date"
+                                    value={newMilestoneDate}
+                                    onChange={(e) => setNewMilestoneDate(e.target.value)}
+                                    className="w-[130px]"
+                                />
+                            </div>
+                            <Textarea
+                                value={newMilestoneDesc}
+                                onChange={(e) => setNewMilestoneDesc(e.target.value)}
+                                placeholder="Milestone notes/description (optional)..."
+                                className="h-16 text-xs resize-none"
                             />
-                            <Input
-                                type="date"
-                                value={newMilestoneDate}
-                                onChange={(e) => setNewMilestoneDate(e.target.value)}
-                                className="w-[130px]"
-                            />
-                            <Button type="button" size="icon" variant="secondary" onClick={handleAddMilestone}>
-                                <Plus className="h-4 w-4" />
+                            <Button type="button" size="sm" className="w-full" variant="secondary" onClick={handleAddMilestone}>
+                                <Plus className="h-4 w-4 mr-2" /> Add Milestone
                             </Button>
                         </div>
 
-                        <div className="space-y-2 max-h-[120px] overflow-y-auto bg-muted/20 p-2 rounded-md">
+                        <div className="space-y-2 max-h-[150px] overflow-y-auto bg-muted/20 p-2 rounded-md">
                             {milestones.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No milestones added.</p>}
                             {milestones.map((m, idx) => (
-                                <div key={idx} className="flex items-center justify-between text-sm bg-background p-2 rounded border">
-                                    <div className="flex flex-col">
+                                <div key={idx} className="flex items-start justify-between text-sm bg-background p-2 rounded border">
+                                    <div className="flex flex-col gap-1">
                                         <span className="font-medium">{m.title}</span>
-                                        {m.targetDate && <span className="text-[10px] text-muted-foreground">Due: {m.targetDate}</span>}
+                                        {m.description && <span className="text-xs text-muted-foreground line-clamp-1">{m.description}</span>}
+                                        {m.targetDate && <span className="text-[10px] text-blue-500 font-medium">Due: {m.targetDate}</span>}
                                     </div>
-                                    <Button type="button" size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => removeMilestone(idx)}>
+                                    <Button type="button" size="icon" variant="ghost" className="h-6 w-6 text-destructive shrink-0" onClick={() => removeMilestone(idx)}>
                                         <X className="h-3 w-3" />
                                     </Button>
                                 </div>

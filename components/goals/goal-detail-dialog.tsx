@@ -70,6 +70,34 @@ export function GoalDetailDialog({ goal, open, onOpenChange, onUpdate }: GoalDet
                     </div>
 
                     <div className="space-y-2">
+                        <Label>Milestones & Notes</Label>
+                        <div className="space-y-3">
+                            {goal.milestones.map((milestone, idx) => (
+                                <div key={idx} className="p-3 border rounded-lg bg-card space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <span className="font-medium text-sm">{milestone.title}</span>
+                                        {milestone.targetDate && (
+                                            <span className="text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">
+                                                {milestone.targetDate}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <Textarea
+                                        placeholder="Add notes for this milestone..."
+                                        value={milestone.description || ""}
+                                        onChange={(e) => {
+                                            const newMilestones = [...goal.milestones];
+                                            newMilestones[idx] = { ...newMilestones[idx], description: e.target.value };
+                                            onUpdate(goal.id, { milestones: newMilestones });
+                                        }}
+                                        className="text-xs min-h-[60px]"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
                         <Label>Resources</Label>
                         <div className="flex gap-2">
                             <Input
