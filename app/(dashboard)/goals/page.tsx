@@ -4,6 +4,7 @@
 import { useApp } from "@/lib/store";
 import { AddGoalDialog } from "@/components/goals/add-goal-dialog";
 import { GoalCard } from "@/components/goals/goal-card";
+import { GoalCalendar } from "@/components/goals/goal-calendar";
 
 export default function GoalsPage() {
     const { goals, addGoal, updateGoal, deleteGoal } = useApp();
@@ -17,6 +18,8 @@ export default function GoalsPage() {
                 </div>
                 <AddGoalDialog onAdd={addGoal} />
             </div>
+
+            <GoalCalendar goals={goals} />
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {goals.map(goal => (
