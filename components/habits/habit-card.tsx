@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { format } from "date-fns";
 import { Habit } from "@/lib/types";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,19 +9,22 @@ import { Flame, Check, Trash2, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useApp } from "@/lib/store";
 import { HabitHeatmap } from "./habit-heatmap";
-import { useState } from "react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface HabitCardProps {
     habit: Habit;
+    selectedDate?: string;
     onDelete: (id: number) => void;
 }
 
-export function HabitCard({ habit, onDelete }: HabitCardProps) {
+export function HabitCard({ habit, selectedDate, onDelete }: HabitCardProps) {
     const { toggleHabit } = useApp();
-    const today = new Date().toISOString().split('T')[0];
-    const isCompletedToday = habit.completedDates.includes(today);
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const activeDate = selectedDate || today;
+    const isCompletedOnDate = habit.completedDates.includes(activeDate);
     const [isOpen, setIsOpen] = useState(false);
+
+    const isToday = activeDate === today;
 
     return (
         <Card className="border shadow-sm">
@@ -52,16 +57,18 @@ export function HabitCard({ habit, onDelete }: HabitCardProps) {
                     <div className="flex flex-wrap gap-1 items-center">
                         <Button
                             size="sm"
-                            variant={isCompletedToday ? "default" : "outline"}
+                            variant={isCompletedOnDate ? "default" : "outline"}
                             className={cn(
                                 "transition-all duration-300 mr-2",
-                                isCompletedToday && "bg-green-500 hover:bg-green-600 text-white border-green-500"
+                                isCompletedOnDate && "bg-green-500 hover:bg-green-600 text-white border-green-500",
+                                !isToday && "opacity-50 cursor-not-allowed"
                             )}
-                            style={isCompletedToday ? { backgroundColor: habit.color, borderColor: habit.color } : {}}
-                            onClick={() => toggleHabit(habit.id, today)}
+                            style={isCompletedOnDate ? { backgroundColor: habit.color, borderColor: habit.color } : {}}
+                            onClick={() => isToday && toggleHabit(habit.id, activeDate)}
+                            disabled={!isToday}
                         >
-                            {isCompletedToday ? <Check className="h-4 w-4 mr-1" /> : null}
-                            {isCompletedToday ? "Done" : "Check In"}
+                            {isCompletedOnDate ? <Check className="h-4 w-4 mr-1" /> : null}
+                            {isCompletedOnDate ? "Done" : (isToday ? "Check In" : "Not Done")}
                         </Button>
 
                         {/* Short Badge for frequency */}

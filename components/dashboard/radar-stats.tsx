@@ -14,10 +14,10 @@ export function RadarStats() {
     const completedDaily = dailyHabits.filter(h => h.completedDates.includes(today)).length;
     const habitScore = totalDaily > 0 ? (completedDaily / totalDaily) * 100 : 0;
 
-    // Metric 2: Goal Progress (Avg progress of active goals)
-    const activeGoals = goals.filter(g => !g.completed);
-    const totalGoalProgress = activeGoals.reduce((acc, g) => acc + (g.progress || 0), 0);
-    const goalScore = activeGoals.length > 0 ? totalGoalProgress / activeGoals.length : 0;
+    // Metric 2: Goal Progress (Avg progress of ALL goals)
+    const totalGoals = goals.length;
+    const totalGoalProgress = goals.reduce((acc, g) => acc + (g.progress || 0), 0);
+    const goalScore = totalGoals > 0 ? totalGoalProgress / totalGoals : 0;
 
     // Metric 3: Task Efficiency (High Priority Tasks Completed / Total High Priority Tasks)
     // This is tricky without history. Let's do: (1 - (Overdue / Total Active)) * 100? 
