@@ -92,6 +92,11 @@ export function GoalCard({ goal, onUpdate, onDelete }: GoalCardProps) {
                                             )}
                                         >
                                             {milestone.title}
+                                            {milestone.targetDate && (
+                                                <span className="ml-2 text-[10px] text-muted-foreground border px-1 rounded bg-secondary/30">
+                                                    {format(new Date(milestone.targetDate), "MMM d")}
+                                                </span>
+                                            )}
                                         </label>
                                     </div>
                                 ))}

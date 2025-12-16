@@ -21,7 +21,7 @@ export interface Goal {
     targetDate?: string; // ISO date string
     completed: boolean;
     progress: number; // 0-100
-    milestones: { title: string; completed: boolean }[];
+    milestones: { title: string; completed: boolean; targetDate?: string }[];
 }
 
 export interface Task {
