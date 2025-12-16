@@ -37,7 +37,7 @@ export async function GET(request: Request) {
             .from(activities)
             .where(eq(activities.userId, userId))
             .orderBy(desc(activities.createdAt))
-            .limit(10);
+            .limit(50);
 
         return NextResponse.json(userActivities);
     } catch (error) {

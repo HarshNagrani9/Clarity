@@ -1,19 +1,54 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { habits } from '@/lib/schema';
-import { eq } from 'drizzle-orm';
+import { habits, habitCompletions } from '@/lib/schema';
+import { eq, and } from 'drizzle-orm';
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     const { id } = await params;
     try {
         const body = await request.json();
+        const { toggleDate, userId, ...updateData } = body;
+
+        // Update the main habits table (for UI/JSONB consistency)
         const updatedHabit = await db
             .update(habits)
-            .set(body)
+            .set(updateData)
             .where(eq(habits.id, parseInt(id)))
             .returning();
+
+        // Analytics: Handle separate normalized table
+        if (toggleDate && userId) {
+            const habitId = parseInt(id);
+
+            // Check if already completed
+            const existing = await db.select().from(habitCompletions).where(
+                and(
+                    eq(habitCompletions.habitId, habitId),
+                    eq(habitCompletions.date, toggleDate)
+                )
+            );
+
+            if (existing.length > 0) {
+                // If exists, remove it (Uncheck)
+                await db.delete(habitCompletions).where(
+                    and(
+                        eq(habitCompletions.habitId, habitId),
+                        eq(habitCompletions.date, toggleDate)
+                    )
+                );
+            } else {
+                // If not exists, insert it (Check)
+                await db.insert(habitCompletions).values({
+                    habitId,
+                    userId,
+                    date: toggleDate
+                });
+            }
+        }
+
         return NextResponse.json(updatedHabit[0]);
     } catch (error) {
+        console.error("Update Error:", error);
         return NextResponse.json({ error: 'Failed to update habit' }, { status: 500 });
     }
 }

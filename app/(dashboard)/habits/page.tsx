@@ -3,6 +3,7 @@
 import { useApp } from "@/lib/store";
 import { AddHabitDialog } from "@/components/habits/add-habit-dialog";
 import { HabitCard } from "@/components/habits/habit-card";
+import { HabitTrends } from "@/components/habits/habit-trends";
 
 export default function HabitsPage() {
     const { habits, addHabit, toggleHabit, deleteHabit } = useApp();
@@ -17,9 +18,11 @@ export default function HabitsPage() {
                 <AddHabitDialog onAdd={addHabit} />
             </div>
 
+            <HabitTrends habits={habits} />
+
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {habits.map(habit => (
-                    <HabitCard key={habit.id} habit={habit} onToggle={toggleHabit} onDelete={deleteHabit} />
+                    <HabitCard key={habit.id} habit={habit} onDelete={deleteHabit} />
                 ))}
             </div>
         </div>

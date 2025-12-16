@@ -1,66 +1,87 @@
 "use client";
 
-import { Check, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Habit } from "@/lib/types";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Flame, Check, Trash2, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useApp } from "@/lib/store";
+import { HabitHeatmap } from "./habit-heatmap";
+import { useState } from "react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface HabitCardProps {
     habit: Habit;
-    onToggle: (id: number) => void;
-    onDelete?: (id: number) => void;
+    onDelete: (id: number) => void;
 }
 
-export function HabitCard({ habit, onToggle, onDelete }: HabitCardProps) {
+export function HabitCard({ habit, onDelete }: HabitCardProps) {
+    const { toggleHabit } = useApp();
     const today = new Date().toISOString().split('T')[0];
     const isCompletedToday = habit.completedDates.includes(today);
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <Card className="hover:bg-accent/5 transition-colors group relative">
-            <CardContent className="flex items-center justify-between p-4">
-                <div className="flex items-center gap-4">
-                    <Button
-                        size="icon"
-                        variant="outline"
-                        className={cn(
-                            "h-10 w-10 rounded-full border-2 transition-all duration-300",
-                            isCompletedToday
-                                ? "bg-primary border-primary text-primary-foreground"
-                                : "hover:bg-primary/10 hover:border-primary/50 text-muted-foreground"
-                        )}
-                        onClick={() => onToggle(habit.id)}
-                        style={{
-                            borderColor: isCompletedToday ? habit.color : undefined,
-                            backgroundColor: isCompletedToday ? habit.color : undefined
-                        }}
-                    >
-                        <Check className={cn("h-5 w-5", isCompletedToday ? "opacity-100" : "opacity-0")} />
-                    </Button>
-                    <div>
-                        <h3 className="font-semibold">{habit.title}</h3>
-                        <p className="text-sm text-muted-foreground capitalize">{habit.frequency} • {habit.streak} day streak</p>
+        <Card className="border shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-base font-semibold">{habit.title}</CardTitle>
+                <div className="flex items-center gap-2">
+                    <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+                        <CollapsibleTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
+                                <CalendarDays className="h-4 w-4" />
+                            </Button>
+                        </CollapsibleTrigger>
+                    </Collapsible>
+                    <div className="flex items-center text-orange-500">
+                        <Flame className="h-4 w-4 mr-1 fill-orange-500" />
+                        <span className="font-bold text-sm">{habit.streak}</span>
                     </div>
                 </div>
+            </CardHeader>
+            <CardContent>
+                {habit.description && <p className="text-sm text-muted-foreground mb-4">{habit.description}</p>}
 
-                <div className="flex items-center gap-4">
-                    {/* Simple visual progress - to be replaced with sparkline later */}
-                    <div className="hidden sm:flex gap-1">
-                        {[...Array(5)].map((_, i) => (
-                            <div key={i} className={cn("w-2 h-6 rounded-sm bg-secondary", i < 3 ? "bg-primary/50" : "")}
-                                style={{ backgroundColor: i < 3 ? habit.color : undefined, opacity: 0.3 + (i * 0.1) }}></div>
-                        ))}
-                    </div>
-                    {onDelete && (
+                <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+                    <CollapsibleContent className="mb-4 animate-in slide-in-from-top-2">
+                        <HabitHeatmap habit={habit} onToggleDate={(date) => toggleHabit(habit.id, date)} />
+                    </CollapsibleContent>
+                </Collapsible>
+
+                <div className="flex items-center justify-between mt-4">
+                    <div className="flex flex-wrap gap-1 items-center">
                         <Button
-                            variant="ghost"
-                            size="icon"
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => onDelete(habit.id)}
+                            size="sm"
+                            variant={isCompletedToday ? "default" : "outline"}
+                            className={cn(
+                                "transition-all duration-300 mr-2",
+                                isCompletedToday && "bg-green-500 hover:bg-green-600 text-white border-green-500"
+                            )}
+                            style={isCompletedToday ? { backgroundColor: habit.color, borderColor: habit.color } : {}}
+                            onClick={() => toggleHabit(habit.id, today)}
                         >
-                            <Trash2 className="h-4 w-4" />
+                            {isCompletedToday ? <Check className="h-4 w-4 mr-1" /> : null}
+                            {isCompletedToday ? "Done" : "Check In"}
                         </Button>
-                    )}
+
+                        {/* Short Badge for frequency */}
+                        <span className="text-[10px] uppercase font-bold px-2 py-1 rounded bg-muted text-muted-foreground">
+                            {habit.frequency}
+                        </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        {onDelete && (
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                onClick={() => onDelete(habit.id)}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </CardContent>
         </Card>

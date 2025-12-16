@@ -22,7 +22,18 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const newHabit = await db.insert(habits).values(body).returning();
+        const { userId, title, description, frequency, frequencyDays, color, startDate, endDate } = body;
+
+        const newHabit = await db.insert(habits).values({
+            userId,
+            title,
+            description,
+            frequency,
+            frequencyDays: frequencyDays || [],
+            color: color || '#22c55e',
+            startDate: startDate ? new Date(startDate) : new Date(),
+            endDate: endDate ? new Date(endDate) : null,
+        }).returning();
         return NextResponse.json(newHabit[0]);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to create habit' }, { status: 500 });

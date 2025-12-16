@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { CheckCircle, Target, ListTodo, TrendingUp, Activity, PieChart as PieIcon, Radar as RadarIcon } from "lucide-react";
 import { RadarStats } from "@/components/dashboard/radar-stats";
 import { DistributionPie } from "@/components/dashboard/distribution-pie";
+import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
@@ -138,32 +139,8 @@ export default function Home() {
         </Card>
 
         {/* Recent Activity */}
-        <Card className="col-span-1 lg:col-span-1">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Recent Activity</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </div>
-            <CardDescription>Latest achievements</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
-              {recentActivities.length > 0 ? recentActivities.map(activity => (
-                <div key={activity.id} className="flex items-center border-b pb-2 last:border-0 last:pb-0">
-                  <div className="h-2 w-2 rounded-full bg-primary mr-3 flex-shrink-0"></div>
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium leading-none">{activity.description}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.createdAt ? formatDistanceToNow(new Date(activity.createdAt), { addSuffix: true }) : 'Just now'}
-                    </p>
-                  </div>
-                </div>
-              )) : (
-                <p className="text-sm text-muted-foreground">No recent activity.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Recent Activity */}
+        <ActivityFeed activities={recentActivities} />
       </div>
     </div>
   );

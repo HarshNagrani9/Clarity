@@ -5,10 +5,13 @@ export const habits = pgTable('habits', {
     userId: text('user_id').notNull(), // Firebase User ID
     title: text('title').notNull(),
     description: text('description'),
-    frequency: text('frequency').default('daily'), // daily, weekly
+    frequency: text('frequency').default('daily'), // daily, weekly, custom
+    frequencyDays: jsonb('frequency_days').default([]), // [0,1,2,3,4,5,6] for custom days
     completedDates: jsonb('completed_dates').default([]), // Store ISO date strings
     streak: integer('streak').default(0),
     color: text('color').default('#22c55e'), // hex color
+    startDate: timestamp('start_date').defaultNow(),
+    endDate: timestamp('end_date'),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -54,4 +57,34 @@ export const tasks = pgTable('tasks', {
     completed: boolean('completed').default(false),
     completedAt: timestamp('completed_at'),
     createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const habitCompletions = pgTable('habit_completions', {
+    id: serial('id').primaryKey(),
+    habitId: integer('habit_id').references(() => habits.id, { onDelete: 'cascade' }).notNull(),
+    userId: text('user_id').notNull(),
+    date: text('date').notNull(), // ISO YYYY-MM-DD
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const weeklyReports = pgTable('weekly_reports', {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    weekStart: text('week_start').notNull(), // ISO YYYY-MM-DD of Monday
+    totalHabits: integer('total_habits').default(0),
+    totalCompleted: integer('total_completed').default(0),
+    completionRate: integer('completion_rate').default(0), // Percentage
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
+export const monthlyReports = pgTable('monthly_reports', {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    month: text('month').notNull(), // MM or Month Name? Let's use YYYY-MM for sorting
+    totalHabits: integer('total_habits').default(0),
+    totalCompleted: integer('total_completed').default(0),
+    completionRate: integer('completion_rate').default(0), // Percentage
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
 });
