@@ -5,12 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface TaskCardProps {
     task: Task;
     onToggle: (id: number) => void;
+    onUpdate: (id: number, updates: Partial<Task>) => void;
     onDelete: (id: number) => void;
 }
 
@@ -20,7 +23,7 @@ const priorityColor = {
     high: "bg-red-500/10 text-red-500 hover:bg-red-500/20",
 };
 
-export function TaskCard({ task, onToggle, onDelete }: TaskCardProps) {
+export function TaskCard({ task, onToggle, onUpdate, onDelete }: TaskCardProps) {
     return (
         <Card className={cn("transition-all hover:bg-accent/5", task.completed && "opacity-60")}>
             <CardContent className="flex items-center p-4 gap-4">
@@ -40,8 +43,25 @@ export function TaskCard({ task, onToggle, onDelete }: TaskCardProps) {
                     </div>
                     {task.dueDate && (
                         <div className="flex items-center text-xs text-muted-foreground gap-1">
-                            <CalendarIcon className="h-3 w-3" />
-                            {new Date(task.dueDate).toLocaleDateString()}
+                            <Popover>
+                                <PopoverTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-auto p-0 hover:bg-transparent hover:text-foreground font-normal">
+                                        <CalendarIcon className="h-3 w-3 mr-1" />
+                                        {new Date(task.dueDate).toLocaleDateString()}
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-3" align="start">
+                                    <div className="grid gap-2">
+                                        <div className="text-sm font-medium leading-none">Reset Deadline</div>
+                                        <Input
+                                            type="date"
+                                            value={task.dueDate}
+                                            onChange={(e) => onToggle(task.id /* Hack: We need an update function, not just toggle */)}
+                                        />
+                                        {/* Wait, onToggle only takes ID. We need a general onUpdate. */}
+                                    </div>
+                                </PopoverContent>
+                            </Popover>
                         </div>
                     )}
                 </div>

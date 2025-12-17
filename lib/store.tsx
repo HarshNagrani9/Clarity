@@ -18,6 +18,7 @@ export interface AppState {
     updateGoal: (id: number, updates: Partial<Goal>) => void;
     deleteGoal: (id: number) => void;
     addTask: (task: Omit<Task, "id" | "completed">) => void;
+    updateTask: (id: number, updates: Partial<Task>) => void;
     toggleTask: (id: number) => void;
     deleteTask: (id: number) => void;
 }
@@ -199,6 +200,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
     };
 
+    const updateTask = async (id: number, updates: Partial<Task>) => {
+        setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+        if (updates.completed) {
+            const task = tasks.find(t => t.id === id);
+            if (task) logActivity('task', `Completed task: ${task.title}`);
+        }
+        await fetch(`/api/tasks/${id}`, {
+            method: 'PATCH',
+            body: JSON.stringify(updates),
+        });
+    };
+
     const toggleTask = async (id: number) => {
         const task = tasks.find(t => t.id === id);
         if (!task) return;
@@ -226,7 +239,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             habits, goals, tasks, userProfile, recentActivities,
             addHabit, toggleHabit, deleteHabit,
             addGoal, updateGoal, deleteGoal,
-            addTask, toggleTask, deleteTask
+            addTask, updateTask, toggleTask, deleteTask
         }}>
             {children}
         </AppContext.Provider>

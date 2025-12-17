@@ -3,9 +3,10 @@
 import { useApp } from "@/lib/store";
 import { AddTaskDialog } from "@/components/tasks/add-task-dialog";
 import { TaskCard } from "@/components/tasks/task-card";
+import { TaskHeatmap } from "@/components/tasks/task-heatmap";
 
 export default function TasksPage() {
-    const { tasks, addTask, toggleTask, deleteTask } = useApp();
+    const { tasks, addTask, toggleTask, updateTask, deleteTask } = useApp();
 
     const activeTasks = tasks.filter(t => !t.completed);
     const completedTasks = tasks.filter(t => t.completed);
@@ -20,6 +21,8 @@ export default function TasksPage() {
                 <AddTaskDialog onAdd={addTask} />
             </div>
 
+            <TaskHeatmap tasks={tasks} />
+
             <div className="grid gap-6 md:grid-cols-[1fr_300px]">
                 <div className="space-y-4">
                     {activeTasks.length > 0 ? (
@@ -28,6 +31,7 @@ export default function TasksPage() {
                                 key={task.id}
                                 task={task}
                                 onToggle={toggleTask}
+                                onUpdate={updateTask}
                                 onDelete={deleteTask}
                             />
                         ))
@@ -46,6 +50,7 @@ export default function TasksPage() {
                                         key={task.id}
                                         task={task}
                                         onToggle={toggleTask}
+                                        onUpdate={updateTask}
                                         onDelete={deleteTask}
                                     />
                                 ))}
@@ -60,15 +65,15 @@ export default function TasksPage() {
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
                                 <span className="text-red-500">High</span>
-                                <span>{tasks.filter(t => t.priority === 'high' && !t.completed).length}</span>
+                                <span className="font-mono">{tasks.filter(t => t.priority === 'high' && !t.completed).length}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-yellow-500">Medium</span>
-                                <span>{tasks.filter(t => t.priority === 'medium' && !t.completed).length}</span>
+                                <span className="font-mono">{tasks.filter(t => t.priority === 'medium' && !t.completed).length}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-blue-500">Low</span>
-                                <span>{tasks.filter(t => t.priority === 'low' && !t.completed).length}</span>
+                                <span className="font-mono">{tasks.filter(t => t.priority === 'low' && !t.completed).length}</span>
                             </div>
                         </div>
                     </div>
