@@ -201,14 +201,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateTask = async (id: number, updates: Partial<Task>) => {
-        setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
+        // Optimistic update logic
+        // If we are marking as complete, set completedAt to now (if not present)
+        let finalUpdates = { ...updates };
+        if (updates.completed === true) {
+            finalUpdates.completedAt = new Date().toISOString();
+        } else if (updates.completed === false) {
+            finalUpdates.completedAt = undefined; // Force remove
+        }
+
+        setTasks(tasks.map(t => t.id === id ? { ...t, ...finalUpdates } : t));
+
         if (updates.completed) {
             const task = tasks.find(t => t.id === id);
             if (task) logActivity('task', `Completed task: ${task.title}`);
         }
         await fetch(`/api/tasks/${id}`, {
             method: 'PATCH',
-            body: JSON.stringify(updates),
+            body: JSON.stringify(finalUpdates),
         });
     };
 
@@ -216,7 +226,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const task = tasks.find(t => t.id === id);
         if (!task) return;
 
-        const updates = { completed: !task.completed };
+        const newCompleted = !task.completed;
+        const updates = {
+            completed: newCompleted,
+            completedAt: newCompleted ? new Date().toISOString() : undefined
+        };
+
         setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
 
         if (!task.completed) {

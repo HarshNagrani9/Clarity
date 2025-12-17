@@ -24,7 +24,7 @@ export function TaskHeatmap({ tasks }: TaskHeatmapProps) {
     // Rows = Days (Sun-Sat or Mon-Sun)
     // Cols = Weeks
 
-    const weeksToShow = 26; // Half a year
+    const weeksToShow = 52; // Full year to fill space
     const startDate = subWeeks(endDate, weeksToShow - 1);
 
     // Align start date to start of week
@@ -47,18 +47,13 @@ export function TaskHeatmap({ tasks }: TaskHeatmapProps) {
 
     const getIntensity = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        // Count COMPLETED tasks on this day?
-        // We generally don't store 'completedAt' for tasks in the simple types yet, only 'dueDate'.
-        // Wait, Habits track 'completedDates'. Tasks only track 'completed' bool. 
-        // We probably need to infer 'completedAt' or just map 'due date' of completed tasks?
-        // If the user wants to visualize "Task Manager", usually it implies "Productivity".
-        // Let's assume for now we visualize "Completed Tasks due on that day".
-        // LIMITATION: If a task was due yesterday but completed today, it counts for yesterday with this logic.
-        // For a heatmap, we really want "Action Date".
-        // Since we don't have an activity log, we will rely on: "Tasks that were completed and due on X".
-        // It's the best proxy we have without schema changes.
+        // Count COMPLETED tasks on this day using 'completedAt'
+        // If completedAt is missing (legacy data), we might fall back to dueDate, but for now strict.
 
-        const count = tasks.filter(t => t.completed && t.dueDate === dateStr).length;
+        const count = tasks.filter(t => {
+            if (!t.completed || !t.completedAt) return false;
+            return format(new Date(t.completedAt), 'yyyy-MM-dd') === dateStr;
+        }).length;
 
         if (count === 0) return "bg-secondary/30";
         if (count <= 2) return "bg-green-300 dark:bg-green-900";
@@ -68,7 +63,10 @@ export function TaskHeatmap({ tasks }: TaskHeatmapProps) {
 
     const getCount = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
-        return tasks.filter(t => t.completed && t.dueDate === dateStr).length;
+        return tasks.filter(t => {
+            if (!t.completed || !t.completedAt) return false;
+            return format(new Date(t.completedAt), 'yyyy-MM-dd') === dateStr;
+        }).length;
     };
 
     return (
