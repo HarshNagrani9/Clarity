@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { Habit, Goal, Task, CalendarEvent } from "@/lib/types";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
+import { calculateStreak } from '@/lib/streak';
 
 export interface AppState {
     habits: Habit[];
@@ -124,14 +125,18 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             newCompletedDates = [...habit.completedDates, targetDate];
         }
 
-        // Simple streak recalc:
-        let streak = 0;
-        // ... (complex streak logic skipped for brevity in diff, keep existing) ...
-        // Re-implementing existing naive logic for consistency with previous view
-        let newStreak = habit.streak;
-        if (targetDate === new Date().toISOString().split('T')[0]) {
-            newStreak = isCompleted ? Math.max(0, habit.streak - 1) : habit.streak + 1;
-        }
+        // Recalculate streak using centralized logic
+        // We need to import it dynamically or assume standard import available at top
+        // Since this is a client file, we can't easily dynamic import logic without useEffect async or just duplicating logic
+        // But for consistency we should import it. Let's add the import to the top of the file first in a separate step?
+        // Actually, let's just use the logic here directly or if we can make `calculateStreak` a client-safe utility.
+        // `lib/streak.ts` uses `date-fns` which IS client safe.
+        // So I will update the imports in the file header in a separate step, and here I will just call it.
+        // Wait, I can't modify imports easily in this chunk.
+        // I will implement the logic call here, but first I need to ensure `calculateStreak` is imported.
+        // Let's assume I will add the import.
+
+        const newStreak = calculateStreak(newCompletedDates);
 
         const updates = { completedDates: newCompletedDates, streak: newStreak };
 

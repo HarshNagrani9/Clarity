@@ -9,13 +9,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
         const body = await request.json();
         const { toggleDate, userId, ...updateData } = body;
 
-        // Update the main habits table (for UI/JSONB consistency)
-        const updatedHabit = await db
-            .update(habits)
-            .set(updateData)
-            .where(eq(habits.id, parseInt(id)))
-            .returning();
-
         // Analytics: Handle separate normalized table
         if (toggleDate && userId) {
             const habitId = parseInt(id);
@@ -45,6 +38,19 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
                 });
             }
         }
+
+        // Recalculate Streak if completedDates is being updated
+        if (updateData.completedDates) {
+            const { calculateStreak } = await import('@/lib/streak');
+            updateData.streak = calculateStreak(updateData.completedDates);
+        }
+
+        // Update the main habits table (for UI/JSONB consistency)
+        const updatedHabit = await db
+            .update(habits)
+            .set(updateData)
+            .where(eq(habits.id, parseInt(id)))
+            .returning();
 
         return NextResponse.json(updatedHabit[0]);
     } catch (error) {
