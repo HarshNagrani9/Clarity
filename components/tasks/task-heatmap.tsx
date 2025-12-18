@@ -96,34 +96,38 @@ export function TaskHeatmap({ tasks }: TaskHeatmapProps) {
                         <div className="h-[14px]"></div>
                     </div>
 
-                    {weeks.map((week, weekIdx) => (
-                        <div key={weekIdx} className="flex flex-col gap-1">
-                            {/* Month label logic is tricky in grids, simplified: show directly above first week of month */}
-                            {weekIdx === 0 || format(week[0], 'MMM') !== format(subWeeks(week[0], 1), 'MMM') ? (
-                                <span className="text-[10px] text-muted-foreground h-[14px]">{format(week[0], 'MMM')}</span>
-                            ) : (
-                                <div className="h-[14px]"></div>
-                            )}
+                    {weeks.map((week, weekIdx) => {
+                        const isNewMonth = weekIdx > 0 && format(week[0], 'MMM') !== format(weeks[weekIdx - 1][0], 'MMM');
 
-                            {week.map((day, dayIdx) => {
-                                const count = getCount(day);
-                                return (
-                                    <TooltipProvider key={day.toISOString()}>
-                                        <Tooltip delayDuration={50}>
-                                            <TooltipTrigger>
-                                                <div
-                                                    className={`w-[14px] h-[14px] rounded-sm transition-colors ${getIntensity(day)} hover:ring-1 hover:ring-ring`}
-                                                />
-                                            </TooltipTrigger>
-                                            <TooltipContent className="text-xs">
-                                                {count} tasks on {format(day, 'MMM d, yyyy')}
-                                            </TooltipContent>
-                                        </Tooltip>
-                                    </TooltipProvider>
-                                );
-                            })}
-                        </div>
-                    ))}
+                        return (
+                            <div key={weekIdx} className={`flex flex-col gap-1 ${isNewMonth ? 'ml-4' : ''}`}>
+                                {/* Month label logic */}
+                                {weekIdx === 0 || isNewMonth ? (
+                                    <span className="text-[10px] text-muted-foreground h-[14px] font-medium">{format(week[0], 'MMM')}</span>
+                                ) : (
+                                    <div className="h-[14px]"></div>
+                                )}
+
+                                {week.map((day, dayIdx) => {
+                                    const count = getCount(day);
+                                    return (
+                                        <TooltipProvider key={day.toISOString()}>
+                                            <Tooltip delayDuration={50}>
+                                                <TooltipTrigger>
+                                                    <div
+                                                        className={`w-[14px] h-[14px] rounded-sm transition-colors ${getIntensity(day)} hover:ring-1 hover:ring-ring`}
+                                                    />
+                                                </TooltipTrigger>
+                                                <TooltipContent className="text-xs">
+                                                    {count} tasks on {format(day, 'MMM d, yyyy')}
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
