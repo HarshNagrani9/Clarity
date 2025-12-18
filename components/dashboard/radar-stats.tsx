@@ -31,10 +31,6 @@ export function RadarStats() {
     const goalsWithMilestones = goals.filter(g => g.milestones && (g.milestones as any[]).length > 0).length;
     const focusScore = goals.length > 0 ? (goalsWithMilestones / goals.length) * 100 : 0;
 
-    // Metric 5: Streak Power (Normalized max streak)
-    // 30 days streak = 100 points
-    const maxStreak = Math.max(0, ...habits.map(h => h.streak));
-    const streakScore = Math.min(100, (maxStreak / 30) * 100);
 
     // Metric 6: Action Bias (Recent activity count)
     // Mocking for visual balance if needed, or use recentActivities length if we had it exposed fully here. 
@@ -49,7 +45,6 @@ export function RadarStats() {
         { subject: 'Goals', A: goalScore, fullMark: 100 },
         { subject: 'Tasks', A: taskScore, fullMark: 100 },
         { subject: 'Focus', A: focusScore, fullMark: 100 },
-        { subject: 'Streak', A: streakScore, fullMark: 100 },
         { subject: 'Action', A: completionScore, fullMark: 100 },
     ];
 

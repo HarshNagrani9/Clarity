@@ -88,3 +88,14 @@ export const monthlyReports = pgTable('monthly_reports', {
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
+
+export const events = pgTable('events', {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    title: text('title').notNull(),
+    description: text('description'),
+    date: text('date').notNull(), // ISO YYYY-MM-DD
+    time: text('time'), // HH:mm or optional
+    link: text('link'),
+    createdAt: timestamp('created_at').defaultNow(),
+});

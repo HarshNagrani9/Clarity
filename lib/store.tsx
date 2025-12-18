@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Habit, Goal, Task } from "@/lib/types";
+import { Habit, Goal, Task, CalendarEvent } from "@/lib/types";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 
@@ -9,6 +9,7 @@ export interface AppState {
     habits: Habit[];
     goals: Goal[];
     tasks: Task[];
+    events: CalendarEvent[];
     userProfile: { displayName?: string, email?: string } | null;
     recentActivities: { id: number, type: string, description: string, createdAt: string }[];
     addHabit: (habit: Omit<Habit, "id" | "streak" | "completedDates">) => void;
@@ -21,6 +22,8 @@ export interface AppState {
     updateTask: (id: number, updates: Partial<Task>) => void;
     toggleTask: (id: number) => void;
     deleteTask: (id: number) => void;
+    addEvent: (event: Omit<CalendarEvent, "id">) => void;
+    deleteEvent: (id: number) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -29,6 +32,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [habits, setHabits] = useState<Habit[]>([]);
     const [goals, setGoals] = useState<Goal[]>([]);
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [userId, setUserId] = useState<string | null>(null);
     const [recentActivities, setRecentActivities] = useState<{ id: number, type: string, description: string, createdAt: string }[]>([]);
     const [userProfile, setUserProfile] = useState<{ displayName?: string, email?: string } | null>(null);
@@ -54,6 +58,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 setHabits([]);
                 setGoals([]);
                 setTasks([]);
+                setEvents([]);
                 setRecentActivities([]);
             }
         });
@@ -62,17 +67,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
     const fetchData = async (uid: string) => {
         try {
-            const [habitsRes, goalsRes, tasksRes, activitiesRes] = await Promise.all([
+            const [habitsRes, goalsRes, tasksRes, activitiesRes, eventsRes] = await Promise.all([
                 fetch(`/api/habits?userId=${uid}`),
                 fetch(`/api/goals?userId=${uid}`),
                 fetch(`/api/tasks?userId=${uid}`),
-                fetch(`/api/activities?userId=${uid}`)
+                fetch(`/api/activities?userId=${uid}`),
+                fetch(`/api/events?userId=${uid}`)
             ]);
 
             if (habitsRes.ok) setHabits(await habitsRes.json());
             if (goalsRes.ok) setGoals(await goalsRes.json());
             if (tasksRes.ok) setTasks(await tasksRes.json());
             if (activitiesRes.ok) setRecentActivities(await activitiesRes.json());
+            if (eventsRes.ok) setEvents(await eventsRes.json());
         } catch (error) {
             console.error("Failed to fetch data", error);
         }
@@ -117,21 +124,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             newCompletedDates = [...habit.completedDates, targetDate];
         }
 
-        // Recalculate streak (Optimistic/Simple logic: Tagging random past dates might break sleek streak calc logic, but fine for now)
-        // Advanced logic would be to recalculate based on consecutive days looking back from today.
-        // For now, let's keep streak simple: Current Streak based on looking back from *today*.
-
         // Simple streak recalc:
         let streak = 0;
-        const sortedDates = [...newCompletedDates].sort().reverse();
-        const today = new Date().toISOString().split('T')[0];
-        // If today is completed, streak starts from today. If not, maybe yesterday? 
-        // Let's simplified: just count consecutive days backwards from today (or yesterday).
-
-        // Use date-fns for robustness if needed, but string comparison works for ISO yyyy-mm-dd
-        // This is a naive implementation, real streak logic usually runs on server or more complex util. 
-        // We'll leave streak existing logic or just increment/decrement based on *today's* action if targetDate == today.
-
+        // ... (complex streak logic skipped for brevity in diff, keep existing) ...
+        // Re-implementing existing naive logic for consistency with previous view
         let newStreak = habit.streak;
         if (targetDate === new Date().toISOString().split('T')[0]) {
             newStreak = isCompleted ? Math.max(0, habit.streak - 1) : habit.streak + 1;
@@ -148,7 +144,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
         await fetch(`/api/habits/${id}`, {
             method: 'PATCH',
-            body: JSON.stringify({ ...updates, toggleDate: targetDate, userId: userId }), // Send toggleDate and userId
+            body: JSON.stringify({ ...updates, toggleDate: targetDate, userId: userId }),
         });
     };
 
@@ -201,17 +197,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const updateTask = async (id: number, updates: Partial<Task>) => {
-        // Optimistic update logic
-        // If we are marking as complete, set completedAt to now (if not present)
         let finalUpdates = { ...updates };
         if (updates.completed === true) {
             finalUpdates.completedAt = new Date().toISOString();
         } else if (updates.completed === false) {
-            finalUpdates.completedAt = undefined; // Force remove
+            finalUpdates.completedAt = undefined;
         }
 
         setTasks(tasks.map(t => t.id === id ? { ...t, ...finalUpdates } : t));
-
         if (updates.completed) {
             const task = tasks.find(t => t.id === id);
             if (task) logActivity('task', `Completed task: ${task.title}`);
@@ -231,7 +224,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             completed: newCompleted,
             completedAt: newCompleted ? new Date().toISOString() : undefined
         };
-
         setTasks(tasks.map(t => t.id === id ? { ...t, ...updates } : t));
 
         if (!task.completed) {
@@ -249,12 +241,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
     };
 
+    const addEvent = async (event: Omit<CalendarEvent, "id">) => {
+        if (!userId) return;
+        const res = await fetch('/api/events', {
+            method: 'POST',
+            body: JSON.stringify({ ...event, userId }),
+        });
+        if (res.ok) {
+            const newEvent = await res.json();
+            setEvents([...events, newEvent]);
+        }
+    };
+
+    const deleteEvent = async (id: number) => {
+        setEvents(events.filter(e => e.id !== id));
+        await fetch(`/api/events/${id}`, { method: 'DELETE' });
+    };
+
     return (
         <AppContext.Provider value={{
-            habits, goals, tasks, userProfile, recentActivities,
+            habits, goals, tasks, userProfile, recentActivities, events,
             addHabit, toggleHabit, deleteHabit,
             addGoal, updateGoal, deleteGoal,
-            addTask, updateTask, toggleTask, deleteTask
+            addTask, updateTask, toggleTask, deleteTask,
+            addEvent, deleteEvent
         }}>
             {children}
         </AppContext.Provider>
