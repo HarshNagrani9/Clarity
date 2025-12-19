@@ -16,7 +16,8 @@ import {
     X,
     Terminal,
     Cpu,
-    MousePointer2
+    MousePointer2,
+    Calendar
 } from 'lucide-react';
 
 /* --- GEOMETRIC BACKGROUND --- */
@@ -198,9 +199,13 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }: any) => (
 
             {/* Desktop Links */}
             <div className="hidden md:flex gap-8 items-center">
-                {['Features', 'Methodology', 'Pricing'].map(item => (
-                    <a key={item} href="#" className="font-mono font-bold text-sm hover:text-lime-400 hover:underline decoration-2 underline-offset-4 transition-all">
-                        {item.toUpperCase()}
+                {[
+                    { label: 'Features', href: '#features' },
+                    { label: 'Methodology', href: '#methodology' },
+                    { label: 'Flow', href: '#flow' }
+                ].map(item => (
+                    <a key={item.label} href={item.href} className="font-mono font-bold text-sm hover:text-lime-400 hover:underline decoration-2 underline-offset-4 transition-all">
+                        {item.label.toUpperCase()}
                     </a>
                 ))}
             </div>
@@ -223,8 +228,14 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }: any) => (
         {/* Mobile Menu Dropdown */}
         {isMenuOpen && (
             <div className="absolute top-24 left-6 right-6 bg-[#1a1a1a] border-2 border-white/10 rounded-2xl p-6 flex flex-col gap-4 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] animate-in fade-in slide-in-from-top-4">
-                {['Features', 'Methodology', 'Pricing'].map(item => (
-                    <a key={item} href="#" className="text-xl font-black uppercase hover:text-lime-400 border-b-2 border-white/5 pb-2">{item}</a>
+                {[
+                    { label: 'Features', href: '#features' },
+                    { label: 'Methodology', href: '#methodology' },
+                    { label: 'Flow', href: '#flow' }
+                ].map(item => (
+                    <a key={item.label} href={item.href} className="text-xl font-black uppercase hover:text-lime-400 border-b-2 border-white/5 pb-2" onClick={() => setIsMenuOpen(false)}>
+                        {item.label}
+                    </a>
                 ))}
                 <Link href="/login" className="text-xl font-black uppercase hover:text-lime-400 border-b-2 border-white/5 pb-2">Login</Link>
             </div>
@@ -240,7 +251,7 @@ const HeroSection = () => {
                 {/* Typographic Hero */}
                 <div className="lg:col-span-7 space-y-8 text-left relative z-20">
                     <div className="inline-block px-4 py-1.5 bg-pink-500 border-2 border-black text-black font-black text-xs uppercase transform -rotate-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                        Productivity is Broken
+                        Focus is Currency
                     </div>
 
                     <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter">
@@ -252,7 +263,7 @@ const HeroSection = () => {
                     </h1>
 
                     <p className="text-xl md:text-2xl text-gray-400 font-mono border-l-4 border-lime-400 pl-6 py-2 max-w-lg">
-                        A radical new operating system for your life. Tasks, habits, and goals in a single, high-voltage dashboard.
+                        The definitive operating system for high-performers. Turn ambiguous goals into data-driven streaks.
                     </p>
 
                     <div className="flex flex-wrap gap-6 pt-4">
@@ -326,9 +337,9 @@ const MarqueeStrip = ({ offset }: any) => (
             {[...Array(20)].map((_, i) => (
                 <span key={i} className="text-black font-black text-3xl mx-6 uppercase flex items-center gap-4">
                     <span className="w-3 h-3 bg-black rounded-full" />
-                    No More Spreadsheets
+                    Relentless Progress
                     <span className="w-3 h-3 bg-black border-2 border-black bg-transparent rounded-full" />
-                    Data Driven Life
+                    Execute With Clarity
                 </span>
             ))}
         </div>
@@ -337,14 +348,14 @@ const MarqueeStrip = ({ offset }: any) => (
 
 const FeatureGrid = () => {
     return (
-        <section className="py-32 px-6 max-w-7xl mx-auto">
+        <section id="features" className="py-32 px-6 max-w-7xl mx-auto">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
 
                 {/* Feature 1 */}
-                <BrutalistCard title="Habit Protocol" icon={Target} accent="bg-pink-500">
-                    <h3 className="text-3xl font-black mb-4">DON'T BREAK<br />THE CHAIN.</h3>
+                <BrutalistCard title="Streak Engine" icon={Target} accent="bg-pink-500">
+                    <h3 className="text-3xl font-black mb-4">BUILD UNSTOPPABLE<br />MOMENTUM.</h3>
                     <p className="text-gray-400 mb-6 font-mono text-sm leading-relaxed">
-                        A visual tracking engine that turns consistency into a game. Miss a day? The dashboard knows.
+                        A visual tracking engine designed for consistency. Miss a day? The system holds you accountable.
                     </p>
                     <div className="flex gap-1 h-12 items-end">
                         {[80, 100, 60, 40, 100, 90, 100].map((h, i) => (
@@ -355,12 +366,12 @@ const FeatureGrid = () => {
 
                 {/* Feature 2 (Wide) */}
                 <div className="lg:col-span-2">
-                    <BrutalistCard title="Central Command" icon={Layout} accent="bg-lime-400">
+                    <BrutalistCard title="Mission Control" icon={Layout} accent="bg-lime-400">
                         <div className="grid md:grid-cols-2 gap-8 h-full">
                             <div>
-                                <h3 className="text-3xl font-black mb-4">THE ALL-IN-ONE<br /><span className="text-lime-400">WORKSPACE.</span></h3>
+                                <h3 className="text-3xl font-black mb-4">TOTAL LIFE<br /><span className="text-lime-400">ALIGNMENT.</span></h3>
                                 <p className="text-gray-400 font-mono text-sm mb-6">
-                                    Calendar, Tasks, Notes, and Analytics merged into one seamless interface. Stop alt-tabbing your life away.
+                                    Calendar, Tasks, and Goals synchronized in real-time. Stop managing tools and start managing output.
                                 </p>
                                 <ul className="space-y-3 font-mono text-sm">
                                     {['Drag & Drop Scheduling', 'Infinite Nested Tasks', 'Focus Mode'].map(item => (
@@ -400,7 +411,7 @@ const FeatureGrid = () => {
                 </div>
 
                 {/* Feature 3 */}
-                <BrutalistCard title="Data Vault" icon={Database} accent="bg-cyan-400">
+                <BrutalistCard title="Private Core" icon={Database} accent="bg-cyan-400">
                     <div className="relative h-40 flex items-center justify-center">
                         <div className="absolute inset-0 border-2 border-dashed border-gray-700 rounded-full animate-[spin_10s_linear_infinite]" />
                         <div className="absolute inset-4 border-2 border-dashed border-gray-600 rounded-full animate-[spin_8s_linear_infinite_reverse]" />
@@ -409,17 +420,17 @@ const FeatureGrid = () => {
                             <Database className="w-8 h-8 text-cyan-400 relative z-10" />
                         </div>
                     </div>
-                    <h3 className="text-xl font-bold mt-4 text-center">ENCRYPTED &<br />LOCAL-FIRST</h3>
+                    <h3 className="text-xl font-bold mt-4 text-center">PRIVACY<br />BY DESIGN</h3>
                 </BrutalistCard>
 
                 {/* Feature 4 */}
                 <div className="lg:col-span-2">
-                    <BrutalistCard title="Growth Analytics" icon={TrendingUp} accent="bg-purple-500">
+                    <BrutalistCard title="Velocity Insights" icon={TrendingUp} accent="bg-purple-500">
                         <div className="flex flex-col md:flex-row items-center gap-8">
                             <div className="flex-1">
-                                <h3 className="text-3xl font-black mb-2">METRICS THAT<br /><span className="text-purple-500">MATTER.</span></h3>
+                                <h3 className="text-3xl font-black mb-2">VISUALIZE YOUR<br /><span className="text-purple-500">ASCENT.</span></h3>
                                 <p className="text-gray-400 font-mono text-sm">
-                                    Visualize your productivity velocity. We track meaningful work, not just busy work.
+                                    Track your trajectory with precision. We measure meaningful output, not just activity.
                                 </p>
                             </div>
                             <div className="flex-1 w-full bg-[#111] p-4 rounded border border-white/10 h-48 flex items-end gap-1 relative overflow-hidden">
@@ -445,7 +456,7 @@ const FeatureGrid = () => {
 };
 
 const InteractiveDataSection = () => (
-    <section className="py-20 border-y-2 border-white/10 bg-[#151515] relative overflow-hidden">
+    <section id="methodology" className="py-20 border-y-2 border-white/10 bg-[#151515] relative overflow-hidden">
         {/* Background Text */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[20vw] font-black text-[#1a1a1a] select-none z-0">
             CLARITY
@@ -453,20 +464,20 @@ const InteractiveDataSection = () => (
 
         <div className="max-w-4xl mx-auto text-center relative z-10 px-6">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#222] border-2 border-lime-400 rounded-full text-lime-400 font-mono text-xs mb-8">
-                <Terminal className="w-4 h-4" /> SYSTEM_STATUS: OPTIMAL
+                <Terminal className="w-4 h-4" /> NOTIFICATION: OPTIMIZATION MAXIMAL
             </div>
 
             <h2 className="text-4xl md:text-6xl font-black mb-12">
-                BUILT FOR THE <br />
-                <span className="text-white underline decoration-pink-500 decoration-4 underline-offset-8">HIGH PERFORMNCE</span>
+                ENGINEERED FOR <br />
+                <span className="text-white underline decoration-pink-500 decoration-4 underline-offset-8">OBSESSION</span>
             </h2>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {[
-                    { label: 'Latency', val: '12ms', icon: Zap },
-                    { label: 'Uptime', val: '99.9%', icon: Activity },
-                    { label: 'Security', val: 'AES-256', icon: Shield },
-                    { label: 'Sync', val: 'Realtime', icon: Cpu },
+                    { label: 'Habit Logic', val: 'Streaks', icon: Target },
+                    { label: 'Visual Data', val: 'Heatmaps', icon: TrendingUp },
+                    { label: 'Day Agenda', val: 'Unified', icon: Calendar },
+                    { label: 'Goal Engine', val: 'Milestones', icon: CheckCircle },
                 ].map((stat, i) => (
                     <div key={i} className="bg-[#1a1a1a] border-2 border-white/10 p-6 rounded-xl hover:border-white/50 transition-colors group">
                         <stat.icon className="w-6 h-6 text-gray-500 group-hover:text-white mb-2 mx-auto transition-colors" />
@@ -480,32 +491,89 @@ const InteractiveDataSection = () => (
 );
 
 const PricingTeaser = () => (
-    <section className="py-32 px-6 bg-lime-400 text-black">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12">
-            <div className="flex-1">
-                <h2 className="text-5xl font-black mb-6 uppercase leading-tight">
-                    Stop paying for <br /> 5 different apps.
-                </h2>
-                <p className="text-xl font-medium mb-8 border-l-4 border-black pl-4">
-                    Clarity replaces Todoist, Notion, Streaks, and Google Calendar. One subscription. Total control.
-                </p>
-                <BrutalistButton color="bg-black" textColor="text-white">
-                    Check Pricing
-                </BrutalistButton>
-            </div>
+    <section id="flow" className="py-32 px-6 bg-lime-400 text-black border-t-2 border-black">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
 
-            <div className="relative w-full md:w-96 aspect-square">
-                {/* Abstract Stack */}
-                <div className="absolute inset-0 bg-white border-4 border-black rounded-3xl translate-x-4 translate-y-4 shadow-xl" />
-                <div className="absolute inset-0 bg-black border-4 border-black rounded-3xl flex items-center justify-center p-8 text-center text-white">
-                    <div>
-                        <div className="text-6xl font-black mb-2">$12</div>
-                        <div className="text-sm font-mono uppercase tracking-widest opacity-60">Per Month</div>
-                        <div className="mt-8 pt-8 border-t border-white/20 w-full text-xs font-mono">
-                            Includes all features.<br />No hidden limits.
+            {/* Left Content */}
+            <div>
+                <div className="inline-block px-3 py-1 bg-black text-lime-400 font-bold font-mono text-xs mb-6 uppercase tracking-widest">
+                    Version 1.0 Ready
+                </div>
+                <h2 className="text-5xl md:text-7xl font-black mb-8 leading-[0.9] tracking-tighter uppercase">
+                    Designed for <br />
+                    <span className="text-white drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">Flow State.</span>
+                </h2>
+                <p className="text-xl font-bold mb-8 leading-tight max-w-md">
+                    Every pixel, animation, and interaction is crafted to keep you in the zone. Fast. Fluid. Unyielding.
+                </p>
+
+                <div className="space-y-4 font-mono text-sm font-bold">
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-black text-lime-400 flex items-center justify-center rounded">
+                            <Zap className="w-4 h-4 fill-current" />
                         </div>
+                        <span>Keyboard First Navigation</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-black text-lime-400 flex items-center justify-center rounded">
+                            <Shield className="w-4 h-4 fill-current" />
+                        </div>
+                        <span>Offline-First Architecture</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 bg-black text-lime-400 flex items-center justify-center rounded">
+                            <Cpu className="w-4 h-4 fill-current" />
+                        </div>
+                        <span>Zero-Lag Optimistic UI</span>
                     </div>
                 </div>
+
+                <div className="mt-10">
+                    <Link href="/signup">
+                        <BrutalistButton color="bg-white" textColor="text-black">
+                            Get Early Access
+                        </BrutalistButton>
+                    </Link>
+                </div>
+            </div>
+
+            {/* Right Visual - Abstract 'Component' Stack */}
+            <div className="relative h-[500px] w-full perspective-1000 group">
+                {/* Card 1 (Back) */}
+                <div className="absolute top-0 right-0 w-3/4 h-64 bg-black border-4 border-black rounded-2xl transform rotate-6 translate-x-4 translate-y-4 opacity-40 transition-transform group-hover:rotate-12 group-hover:translate-x-8" />
+
+                {/* Card 2 (Middle) */}
+                <div className="absolute top-10 right-10 w-3/4 h-64 bg-white border-4 border-black rounded-2xl transform -rotate-3 transition-transform group-hover:-rotate-6 z-10 flex flex-col items-center justify-center p-6 shadow-xl">
+                    <div className="w-16 h-16 bg-gray-200 rounded-full mb-4 animate-pulse" />
+                    <div className="h-4 bg-gray-200 w-3/4 rounded mb-2" />
+                    <div className="h-4 bg-gray-200 w-1/2 rounded" />
+                </div>
+
+                {/* Card 3 (Front - Main Interactive) */}
+                <div className="absolute bottom-10 left-10 w-3/4 bg-[#1a1a1a] border-4 border-black rounded-2xl transform rotate-2 z-20 overflow-hidden shadow-[12px_12px_0px_rgba(0,0,0,0.5)] transition-transform group-hover:rotate-0 group-hover:scale-105">
+                    {/* Window Header */}
+                    <div className="bg-[#2a2a2a] p-3 flex gap-2 border-b-2 border-white/10">
+                        <div className="w-3 h-3 rounded-full bg-red-500" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                    </div>
+                    {/* Code Content */}
+                    <div className="p-6 font-mono text-xs text-lime-400 space-y-2">
+                        <div className="flex">
+                            <span className="text-pink-500 mr-2">const</span>
+                            <span className="text-white mr-2">productivity</span>
+                            <span className="text-pink-500">=</span>
+                        </div>
+                        <div className="pl-4 border-l border-white/10 space-y-1">
+                            <div><span className="text-cyan-400">focus</span>: <span className="text-yellow-400">"infinite"</span>,</div>
+                            <div><span className="text-cyan-400">distraction</span>: <span className="text-purple-500">null</span>,</div>
+                            <div><span className="text-cyan-400">velocity</span>: <span className="text-blue-400">100</span></div>
+                        </div>
+                        <div className="text-gray-500 pt-2">// Ready to ship</div>
+                        <div className="animate-pulse">_</div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
