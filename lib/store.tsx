@@ -38,14 +38,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [recentActivities, setRecentActivities] = useState<{ id: number, type: string, description: string, createdAt: string }[]>([]);
     const [userProfile, setUserProfile] = useState<{ displayName?: string, email?: string } | null>(null);
 
+    const authFetch = async (url: string, options: RequestInit = {}) => {
+        const token = await auth.currentUser?.getIdToken();
+        const headers = {
+            ...options.headers,
+            'Authorization': token ? `Bearer ${token}` : '',
+            'Content-Type': 'application/json',
+        } as HeadersInit;
+        return fetch(url, { ...options, headers });
+    };
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setUserId(user.uid);
                 setUserProfile({ displayName: user.displayName || undefined, email: user.email || undefined });
                 // Sync user data
+                const token = await user.getIdToken();
                 await fetch('/api/users/sync', {
                     method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
                     body: JSON.stringify({
                         uid: user.uid,
                         email: user.email,
@@ -69,11 +84,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const fetchData = async (uid: string) => {
         try {
             const [habitsRes, goalsRes, tasksRes, activitiesRes, eventsRes] = await Promise.all([
-                fetch(`/api/habits?userId=${uid}`),
-                fetch(`/api/goals?userId=${uid}`),
-                fetch(`/api/tasks?userId=${uid}`),
-                fetch(`/api/activities?userId=${uid}`),
-                fetch(`/api/events?userId=${uid}`)
+                authFetch(`/api/habits?userId=${uid}`),
+                authFetch(`/api/goals?userId=${uid}`),
+                authFetch(`/api/tasks?userId=${uid}`),
+                authFetch(`/api/activities?userId=${uid}`),
+                authFetch(`/api/events?userId=${uid}`)
             ]);
 
             if (habitsRes.ok) setHabits(await habitsRes.json());
@@ -92,7 +107,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setRecentActivities([newActivity, ...recentActivities].slice(0, 10)); // Keep top 10
 
         if (userId) {
-            await fetch('/api/activities', {
+            await authFetch('/api/activities', {
                 method: 'POST',
                 body: JSON.stringify({ userId, type, description }),
             });
@@ -106,7 +121,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setHabits([...habits, newHabit]);
         // Only persist if user is logged in
         if (userId) {
-            const res = await fetch('/api/habits', {
+            const res = await authFetch('/api/habits', {
                 method: 'POST',
                 body: JSON.stringify({ ...habit, userId }),
             });
@@ -146,7 +161,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (userId) {
-            await fetch(`/api/habits/${id}`, {
+            await authFetch(`/api/habits/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ ...updates, toggleDate: targetDate, userId: userId }),
             });
@@ -156,7 +171,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const deleteHabit = async (id: number) => {
         setHabits(habits.filter(h => h.id !== id));
         if (userId) {
-            await fetch(`/api/habits/${id}`, { method: 'DELETE' });
+            await authFetch(`/api/habits/${id}`, { method: 'DELETE' });
         }
     };
 
@@ -166,7 +181,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setGoals([...goals, newGoal]);
 
         if (userId) {
-            const res = await fetch('/api/goals', {
+            const res = await authFetch('/api/goals', {
                 method: 'POST',
                 body: JSON.stringify({ ...goal, userId }),
             });
@@ -187,7 +202,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (goal) logActivity('goal', `Completed goal: ${goal.title}`);
         }
         if (userId) {
-            await fetch(`/api/goals/${id}`, {
+            await authFetch(`/api/goals/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify(updates),
             });
@@ -197,7 +212,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const deleteGoal = async (id: number) => {
         setGoals(goals.filter(g => g.id !== id));
         if (userId) {
-            await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+            await authFetch(`/api/goals/${id}`, { method: 'DELETE' });
         }
     };
 
@@ -207,7 +222,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setTasks([...tasks, newTask]);
 
         if (userId) {
-            const res = await fetch('/api/tasks', {
+            const res = await authFetch('/api/tasks', {
                 method: 'POST',
                 body: JSON.stringify({ ...task, userId }),
             });
@@ -235,7 +250,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             if (task) logActivity('task', `Completed task: ${task.title}`);
         }
         if (userId) {
-            await fetch(`/api/tasks/${id}`, {
+            await authFetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify(finalUpdates),
             });
@@ -258,7 +273,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (userId) {
-            await fetch(`/api/tasks/${id}`, {
+            await authFetch(`/api/tasks/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify(updates),
             });
@@ -268,7 +283,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const deleteTask = async (id: number) => {
         setTasks(tasks.filter(t => t.id !== id));
         if (userId) {
-            await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+            await authFetch(`/api/tasks/${id}`, { method: 'DELETE' });
         }
     };
 
@@ -278,7 +293,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setEvents([...events, newEvent]);
 
         if (userId) {
-            const res = await fetch('/api/events', {
+            const res = await authFetch('/api/events', {
                 method: 'POST',
                 body: JSON.stringify({ ...event, userId }),
             });
@@ -292,7 +307,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const deleteEvent = async (id: number) => {
         setEvents(events.filter(e => e.id !== id));
         if (userId) {
-            await fetch(`/api/events/${id}`, { method: 'DELETE' });
+            await authFetch(`/api/events/${id}`, { method: 'DELETE' });
         }
     };
 

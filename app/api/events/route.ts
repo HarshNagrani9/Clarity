@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { events } from '@/lib/schema';
 import { eq, desc } from 'drizzle-orm';
+import { verifyAuth } from '@/lib/auth-verify';
 
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-        return NextResponse.json({ error: 'UserId is required' }, { status: 400 });
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const userId = decodedToken.uid;
 
     try {
         const userEvents = await db.select()
@@ -24,9 +24,18 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
-        const newEvent = await db.insert(events).values(body).returning();
+        // Overwrite userId with authenticated one
+        const newEvent = await db.insert(events).values({
+            ...body,
+            userId: decodedToken.uid
+        }).returning();
         return NextResponse.json(newEvent[0]);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to create event' }, { status: 500 });

@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { tasks } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { verifyAuth } from '@/lib/auth-verify';
 
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-        return NextResponse.json({ error: 'UserId is required' }, { status: 400 });
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const userId = decodedToken.uid;
 
     try {
         const userTasks = await db.select().from(tasks).where(eq(tasks.userId, userId));
@@ -20,10 +20,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
         const newTask = await db.insert(tasks).values({
             ...body,
+            userId: decodedToken.uid,
             dueDate: body.dueDate ? new Date(body.dueDate) : null,
         }).returning();
         return NextResponse.json(newTask[0]);

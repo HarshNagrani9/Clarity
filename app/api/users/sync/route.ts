@@ -2,11 +2,22 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { users } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { verifyAuth } from '@/lib/auth-verify';
 
 export async function POST(request: Request) {
     try {
+        const decodedToken = await verifyAuth();
+        if (!decodedToken) {
+            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { uid, email, displayName, mobile } = body;
+
+        // Security check: Ensure the authenticated user is syncing their OWN data
+        if (uid !== decodedToken.uid) {
+            return NextResponse.json({ error: 'Forbidden: UID mismatch' }, { status: 403 });
+        }
 
         if (!uid || !email) {
             return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });

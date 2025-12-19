@@ -33,8 +33,13 @@ export function AuthForm({ mode }: AuthFormProps) {
             const user = result.user;
 
             // Sync to DB
+            const token = await user.getIdToken();
             await fetch('/api/users/sync', {
                 method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
                 body: JSON.stringify({
                     uid: user.uid,
                     email: user.email,

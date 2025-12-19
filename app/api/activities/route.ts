@@ -2,13 +2,20 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { activities } from '@/lib/schema';
 import { eq, desc } from 'drizzle-orm';
+import { verifyAuth } from '@/lib/auth-verify';
 
 export async function POST(request: Request) {
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
-        const { userId, type, description } = body;
+        const { type, description } = body;
+        const userId = decodedToken.uid;
 
-        if (!userId || !type || !description) {
+        if (!type || !description) {
             return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
         }
 
@@ -25,12 +32,11 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-        return NextResponse.json({ error: 'UserId required' }, { status: 400 });
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const userId = decodedToken.uid;
 
     try {
         const userActivities = await db.select()

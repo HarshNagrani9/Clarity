@@ -2,14 +2,14 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { goals } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
+import { verifyAuth } from '@/lib/auth-verify';
 
 export async function GET(request: Request) {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-
-    if (!userId) {
-        return NextResponse.json({ error: 'UserId is required' }, { status: 400 });
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+    const userId = decodedToken.uid;
 
     try {
         const userGoals = await db.select().from(goals).where(eq(goals.userId, userId));
@@ -20,6 +20,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+    const decodedToken = await verifyAuth();
+    if (!decodedToken) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     try {
         const body = await request.json();
         // Ensure targetDate is a Date object if strictly required by schema, 
@@ -27,6 +32,7 @@ export async function POST(request: Request) {
         // However, for timestamp fields, text is usually fine in JSON.
         const newGoal = await db.insert(goals).values({
             ...body,
+            userId: decodedToken.uid, // Force userId from token
             targetDate: body.targetDate ? new Date(body.targetDate) : null,
         }).returning();
         return NextResponse.json(newGoal[0]);
