@@ -70,13 +70,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                     {mode === "signup" && (
                         <>
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="name" className="uppercase text-[10px] font-bold tracking-[0.2em] text-muted-foreground/70 mb-1.5">Full Name</Label>
                                 <Input
                                     id="name"
                                     placeholder="John Doe"
                                     type="text"
                                     autoCapitalize="words"
                                     autoComplete="name"
+                                    className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
                                     disabled={loading}
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
@@ -84,12 +85,13 @@ export function AuthForm({ mode }: AuthFormProps) {
                                 />
                             </div>
                             <div className="grid gap-2">
-                                <Label htmlFor="mobile">Mobile Number</Label>
+                                <Label htmlFor="mobile" className="uppercase text-[10px] font-bold tracking-[0.2em] text-muted-foreground/70 mb-1.5">Mobile Number</Label>
                                 <Input
                                     id="mobile"
                                     placeholder="+1234567890"
                                     type="tel"
                                     autoComplete="tel"
+                                    className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
                                     disabled={loading}
                                     value={mobile}
                                     onChange={(e) => setMobile(e.target.value)}
@@ -99,7 +101,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                         </>
                     )}
                     <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+                        <Label htmlFor="email" className="uppercase text-[10px] font-bold tracking-[0.2em] text-muted-foreground/70 mb-1.5">Email</Label>
                         <Input
                             id="email"
                             placeholder="name@example.com"
@@ -107,6 +109,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                             autoCapitalize="none"
                             autoComplete="email"
                             autoCorrect="off"
+                            className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
                             disabled={loading}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -114,13 +117,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                         />
                     </div>
                     <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                        <Label htmlFor="password" className="uppercase text-[10px] font-bold tracking-[0.2em] text-muted-foreground/70 mb-1.5">Password</Label>
                         <Input
                             id="password"
                             placeholder="••••••••"
                             type="password"
                             autoCapitalize="none"
                             autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                            className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
                             disabled={loading}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}

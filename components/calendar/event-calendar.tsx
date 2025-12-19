@@ -309,17 +309,16 @@ export function EventCalendar() {
                     </div>
                 </CardHeader>
                 <CardContent className="px-0">
-                    <div className="grid grid-cols-7 gap-4 mb-4 text-center text-sm font-medium text-muted-foreground">
+                    <div className="grid grid-cols-7 gap-1 md:gap-4 mb-4 text-center text-xs md:text-sm font-medium text-muted-foreground">
                         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
                             <div key={day}>{day}</div>
                         ))}
                     </div>
 
-                    <div className="grid grid-cols-7 gap-4 auto-rows-[120px]">
+                    <div className="grid grid-cols-7 gap-1 md:gap-4 auto-rows-fr">
                         {days.map((day) => {
                             const isCurrentMonth = isSameMonth(day, currentMonth);
 
-                            // If not current month, render empty placeholder to maintain grid alignment but invisible
                             if (!isCurrentMonth) {
                                 return <div key={day.toString()} className="invisible" />;
                             }
@@ -332,25 +331,39 @@ export function EventCalendar() {
                                     key={day.toString()}
                                     onClick={() => setSelectedDate(day)}
                                     className={cn(
-                                        "p-3 border rounded-xl relative flex flex-col gap-1 overflow-hidden transition-all hover:ring-2 hover:ring-primary/50 cursor-pointer bg-card/50 hover:bg-card",
+                                        "p-1 md:p-3 border rounded-lg md:rounded-xl relative flex flex-col gap-1 overflow-hidden transition-all hover:ring-2 hover:ring-primary/50 cursor-pointer bg-card/50 hover:bg-card aspect-square md:aspect-auto md:min-h-[120px]",
                                         isToday(day) && "border-primary/50 bg-primary/5 ring-1 ring-primary/20"
                                     )}
                                 >
-                                    <div className="flex justify-between items-start">
+                                    <div className="flex justify-center md:justify-between items-center md:items-start h-full md:h-auto">
                                         <span className={cn(
-                                            "text-sm font-medium w-7 h-7 flex items-center justify-center rounded-full transition-colors",
+                                            "text-xs md:text-sm font-medium w-6 h-6 md:w-7 md:h-7 flex items-center justify-center rounded-full transition-colors shrink-0",
                                             isToday(day) ? "bg-primary text-primary-foreground" : "text-muted-foreground"
                                         )}>
                                             {format(day, "d")}
                                         </span>
                                         {itemCount > 0 && (
-                                            <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+                                            <span className="hidden md:inline-flex text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                                                 {itemCount}
                                             </span>
                                         )}
                                     </div>
 
-                                    <div className="flex flex-col gap-1.5 overflow-hidden mt-2">
+                                    {/* Mobile: Dot Indicators */}
+                                    <div className="flex md:hidden justify-center gap-0.5 absolute bottom-1.5 left-0 right-0 px-1">
+                                        {dayEvents.length > 0 && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                                        )}
+                                        {dayTasks.length > 0 && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                                        )}
+                                        {dayGoals.length > 0 && (
+                                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                                        )}
+                                    </div>
+
+                                    {/* Desktop: Details List */}
+                                    <div className="hidden md:flex flex-col gap-1.5 overflow-hidden mt-2">
                                         {dayEvents.slice(0, 2).map((event) => (
                                             <div key={event.id} className="text-[10px] truncate px-2 py-1 rounded bg-secondary/80 text-secondary-foreground font-medium flex items-center gap-1.5 border border-transparent hover:border-border/50 transition-colors">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
