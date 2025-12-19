@@ -12,6 +12,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { useApp } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
+const getPriorityColor = (priority: string) => {
+    switch (priority) {
+        case 'high': return 'bg-red-500';
+        case 'medium': return 'bg-yellow-500';
+        case 'low': return 'bg-blue-500';
+        default: return 'bg-gray-500';
+    }
+};
+
 export function EventCalendar() {
     const { events, addEvent, deleteEvent, habits, tasks, goals } = useApp();
     const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -134,15 +143,44 @@ export function EventCalendar() {
                                 ) : (
                                     <div className="space-y-2">
                                         {selectedEvents.map(event => (
-                                            <div key={event.id} className="p-2 rounded-md border bg-card relative group text-sm">
-                                                <div className="flex justify-between items-start">
-                                                    <span className="font-medium">{event.title}</span>
-                                                    <Button variant="ghost" size="icon" className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDeleteEvent(event.id)}>
-                                                        <Trash2 className="h-3 w-3 text-muted-foreground hover:text-red-500" />
-                                                    </Button>
+                                            <div key={event.id} className="p-3 rounded-lg border bg-card relative group flex gap-3">
+                                                {/* Time Column */}
+                                                <div className="flex flex-col items-center justify-center min-w-[60px] border-r pr-3 text-muted-foreground">
+                                                    {event.time ? (
+                                                        <>
+                                                            <span className="text-sm font-semibold text-foreground">{event.time}</span>
+                                                            {/* Optional: Add AM/PM logic if needed, or rely on user input */}
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-xs italic">All Day</span>
+                                                    )}
                                                 </div>
-                                                {event.time && <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5"><Clock className="w-3 h-3" /> {event.time}</div>}
-                                                {event.link && <a href={event.link} target="_blank" className="text-xs text-primary underline mt-1 block flex items-center gap-1"><LinkIcon className="w-3 h-3" /> Link</a>}
+
+                                                {/* Content Column */}
+                                                <div className="flex-1 space-y-1">
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="font-medium text-sm leading-none">{event.title}</span>
+                                                        <Button variant="ghost" size="icon" className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity -mt-1 -mr-1" onClick={() => handleDeleteEvent(event.id)}>
+                                                            <Trash2 className="h-3 w-3 text-muted-foreground hover:text-red-500" />
+                                                        </Button>
+                                                    </div>
+
+                                                    {event.description && (
+                                                        <p className="text-xs text-muted-foreground line-clamp-2">{event.description}</p>
+                                                    )}
+
+                                                    {event.link && (
+                                                        <a
+                                                            href={event.link}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1 w-fit pt-1"
+                                                        >
+                                                            <LinkIcon className="w-3 h-3" />
+                                                            {new URL(event.link).hostname.replace('www.', '')}
+                                                        </a>
+                                                    )}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -166,21 +204,43 @@ export function EventCalendar() {
                                 )}
                             </div>
 
-                            {/* Tasks & Goals Combined */}
-                            {(selectedTasks.length > 0 || selectedGoals.length > 0) && (
+                            {/* Tasks Section */}
+                            {selectedTasks.length > 0 && (
                                 <div className="space-y-2">
-                                    <h4 className="font-semibold text-sm">Tasks & Goals Due</h4>
+                                    <h4 className="font-semibold text-sm flex items-center gap-2 text-blue-600">
+                                        Tasks
+                                        <span className="text-xs font-normal text-muted-foreground bg-secondary px-1.5 rounded-full">{selectedTasks.length}</span>
+                                    </h4>
                                     <div className="space-y-1">
                                         {selectedTasks.map(task => (
-                                            <div key={`t-${task.id}`} className="flex items-center gap-2 text-sm p-2 rounded-md border bg-muted/20">
-                                                <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">Task</span>
-                                                <span className={cn(task.completed && "line-through text-muted-foreground")}>{task.title}</span>
+                                            <div key={`t-${task.id}`} className="flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50">
+                                                <div className={cn("w-2 h-2 rounded-full shrink-0", task.completed ? "bg-muted-foreground" : getPriorityColor(task.priority))} />
+                                                <span className={cn("flex-1", task.completed && "line-through text-muted-foreground")}>{task.title}</span>
+                                                {task.priority !== 'medium' && (
+                                                    <span className={cn("text-[10px] px-1.5 py-0.5 rounded capitalize",
+                                                        task.priority === 'high' ? "bg-red-100 text-red-700" : "bg-blue-100 text-blue-700"
+                                                    )}>
+                                                        {task.priority}
+                                                    </span>
+                                                )}
                                             </div>
                                         ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Goals Section */}
+                            {selectedGoals.length > 0 && (
+                                <div className="space-y-2">
+                                    <h4 className="font-semibold text-sm flex items-center gap-2 text-purple-600">
+                                        Goals & Milestones
+                                        <span className="text-xs font-normal text-muted-foreground bg-secondary px-1.5 rounded-full">{selectedGoals.length}</span>
+                                    </h4>
+                                    <div className="space-y-1">
                                         {selectedGoals.map(goal => (
-                                            <div key={`g-${goal.id}`} className="flex items-center gap-2 text-sm p-2 rounded-md border bg-muted/20">
-                                                <span className="text-xs font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-700">Goal</span>
-                                                <span className={cn(goal.completed && "line-through text-muted-foreground")}>{goal.title}</span>
+                                            <div key={`g-${goal.id}`} className="flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50">
+                                                <div className={cn("w-2 h-2 rounded-full shrink-0", goal.completed ? "bg-green-500" : "bg-purple-500")} />
+                                                <span className={cn("flex-1", goal.completed && "line-through text-muted-foreground")}>{goal.title}</span>
                                             </div>
                                         ))}
                                     </div>
