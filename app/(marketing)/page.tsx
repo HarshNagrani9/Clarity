@@ -245,14 +245,14 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }: any) => (
 
 const HeroSection = () => {
     return (
-        <section className="min-h-[90vh] flex flex-col justify-center items-center px-6 relative">
+        <section className="min-h-[90vh] flex flex-col justify-center items-center px-6 relative pt-32 md:pt-0">
             <div className="max-w-6xl w-full mx-auto grid lg:grid-cols-12 gap-12 items-center">
 
                 {/* Typographic Hero */}
                 <div className="lg:col-span-7 space-y-8 text-left relative z-20">
                     <div className="inline-block px-4 py-1.5 bg-pink-500 border-2 border-black text-black font-black text-xs uppercase transform -rotate-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
                         Focus is Currency
-                    </div>
+                    </div >
 
                     <h1 className="text-6xl md:text-8xl font-black leading-[0.85] tracking-tighter">
                         ORGANIZE <br />
@@ -276,10 +276,10 @@ const HeroSection = () => {
                             No Login Required
                         </span>
                     </div>
-                </div>
+                </div >
 
                 {/* Abstract "Wireframe" Visual */}
-                <div className="lg:col-span-5 relative">
+                < div className="lg:col-span-5 relative" >
                     <div className="relative w-full aspect-square border-4 border-white/20 bg-[#151515] rounded-3xl shadow-[12px_12px_0px_0px_rgba(50,50,50,1)] overflow-hidden group">
 
                         {/* Grid Background */}
@@ -324,10 +324,10 @@ const HeroSection = () => {
                         {/* Overlay Scanline */}
                         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/5 to-transparent h-10 w-full animate-[scan_3s_ease-in-out_infinite] pointer-events-none z-20" />
                     </div>
-                </div>
+                </div >
 
-            </div>
-        </section>
+            </div >
+        </section >
     );
 };
 
