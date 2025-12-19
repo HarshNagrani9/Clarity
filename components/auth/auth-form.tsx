@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,37 @@ export function AuthForm({ mode }: AuthFormProps) {
     const [name, setName] = useState("");
     const [mobile, setMobile] = useState("");
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+
+    const handleGoogleLogin = async () => {
+        setGoogleLoading(true);
+        setError(null);
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            // Sync to DB
+            await fetch('/api/users/sync', {
+                method: 'POST',
+                body: JSON.stringify({
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: user.displayName,
+                    mobile: user.phoneNumber || null // Google doesn't always provide this
+                })
+            });
+
+            router.push("/dashboard");
+        } catch (err: any) {
+            console.error("Google login error:", err);
+            setError(err.message || "Failed to sign in with Google.");
+        } finally {
+            setGoogleLoading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,7 +107,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                                     autoCapitalize="words"
                                     autoComplete="name"
                                     className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
-                                    disabled={loading}
+                                    disabled={loading || googleLoading}
                                     value={name}
                                     onChange={(e) => setName(e.target.value)}
                                     required
@@ -92,7 +121,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                                     type="tel"
                                     autoComplete="tel"
                                     className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
-                                    disabled={loading}
+                                    disabled={loading || googleLoading}
                                     value={mobile}
                                     onChange={(e) => setMobile(e.target.value)}
                                     required
@@ -110,7 +139,7 @@ export function AuthForm({ mode }: AuthFormProps) {
                             autoComplete="email"
                             autoCorrect="off"
                             className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
-                            disabled={loading}
+                            disabled={loading || googleLoading}
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -125,14 +154,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                             autoCapitalize="none"
                             autoComplete={mode === "signup" ? "new-password" : "current-password"}
                             className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
-                            disabled={loading}
+                            disabled={loading || googleLoading}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
                     {error && <p className="text-sm text-red-500">{error}</p>}
-                    <Button disabled={loading}>
+                    <Button disabled={loading || googleLoading}>
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {mode === "signin" ? "Sign In" : "Sign Up"}
                     </Button>
@@ -148,6 +177,16 @@ export function AuthForm({ mode }: AuthFormProps) {
                     </span>
                 </div>
             </div>
+            <Button variant="outline" type="button" disabled={loading || googleLoading} onClick={handleGoogleLogin}>
+                {googleLoading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                    <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                        <path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path>
+                    </svg>
+                )}
+                Google
+            </Button>
             <div className="text-center text-sm">
                 {mode === "signin" ? (
                     <>
@@ -168,3 +207,4 @@ export function AuthForm({ mode }: AuthFormProps) {
         </div>
     );
 }
+
