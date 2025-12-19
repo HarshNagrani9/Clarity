@@ -23,6 +23,8 @@ export default function GoalsPage() {
                 <AddGoalDialog onAdd={addGoal} />
             </div>
 
+            <GoalCalendar goals={goals} />
+
             <Tabs defaultValue="active" className="w-full">
                 <div className="flex items-center justify-between mb-4">
                     <TabsList>
@@ -32,8 +34,6 @@ export default function GoalsPage() {
                 </div>
 
                 <TabsContent value="active" className="space-y-6">
-                    <GoalCalendar goals={activeGoals} />
-
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {activeGoals.map(goal => (
                             <GoalCard

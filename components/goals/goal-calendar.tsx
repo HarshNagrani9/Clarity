@@ -17,6 +17,7 @@ interface GoalCalendarProps {
 export function GoalCalendar({ goals }: GoalCalendarProps) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+    const [showCompleted, setShowCompleted] = useState(true);
 
     const startDate = startOfWeek(startOfMonth(currentMonth));
     const endDate = endOfWeek(endOfMonth(currentMonth));
@@ -37,6 +38,8 @@ export function GoalCalendar({ goals }: GoalCalendarProps) {
         goals.forEach(goal => {
             // Check Goal Target
             if (goal.targetDate && isSameDay(new Date(goal.targetDate), date)) {
+                if (!showCompleted && goal.completed) return; // Skip if hidden
+
                 items.push({
                     type: 'goal',
                     title: `${goal.completed ? "Achieved" : "Target"}: ${goal.title}`,
@@ -48,6 +51,8 @@ export function GoalCalendar({ goals }: GoalCalendarProps) {
             // Check Milestones
             goal.milestones.forEach(milestone => {
                 if (milestone.targetDate && isSameDay(new Date(milestone.targetDate), date)) {
+                    if (!showCompleted && milestone.completed) return; // Skip if hidden
+
                     items.push({
                         type: 'milestone',
                         title: `${milestone.completed ? "Completed" : "Due"}: ${milestone.title} (${goal.title})`,
@@ -77,7 +82,7 @@ export function GoalCalendar({ goals }: GoalCalendarProps) {
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         {selectedItems.length === 0 ? (
-                            <p className="text-center text-muted-foreground py-8">No goals or milestones due on this day.</p>
+                            <p className="text-center text-muted-foreground py-8">No goals or milestones visible for this day.</p>
                         ) : (
                             <div className="space-y-3">
                                 {selectedItems.map((item, idx) => (
@@ -97,9 +102,20 @@ export function GoalCalendar({ goals }: GoalCalendarProps) {
 
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <CardTitle className="text-xl font-bold">
-                        {format(currentMonth, "MMMM yyyy")}
-                    </CardTitle>
+                    <div className="flex items-center gap-4">
+                        <CardTitle className="text-xl font-bold">
+                            {format(currentMonth, "MMMM yyyy")}
+                        </CardTitle>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setShowCompleted(!showCompleted)}
+                            className="text-xs h-7 px-2"
+                        >
+                            {showCompleted ? "Hide Completed" : "Show Completed"}
+                        </Button>
+                    </div>
+
                     <div className="flex items-center space-x-2">
                         <Button variant="outline" size="icon" onClick={prevMonth}>
                             <ChevronLeft className="h-4 w-4" />

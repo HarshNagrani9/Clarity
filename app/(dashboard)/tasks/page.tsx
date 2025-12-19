@@ -22,6 +22,8 @@ export default function TasksPage() {
                 <AddTaskDialog onAdd={addTask} />
             </div>
 
+            <TaskHeatmap tasks={tasks} />
+
             <Tabs defaultValue="active" className="w-full">
                 <div className="flex items-center justify-between mb-4">
                     <TabsList>
@@ -31,8 +33,6 @@ export default function TasksPage() {
                 </div>
 
                 <TabsContent value="active" className="space-y-6">
-                    <TaskHeatmap tasks={tasks} />
-
                     <div className="grid gap-6 md:grid-cols-[1fr_300px]">
                         <div className="space-y-4">
                             {activeTasks.length > 0 ? (
