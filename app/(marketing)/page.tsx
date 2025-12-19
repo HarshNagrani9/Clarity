@@ -214,7 +214,7 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }: any) => (
             <div className="hidden md:block">
                 <Link href="/signup">
                     <BrutalistButton color="bg-white" textColor="text-black">
-                        Join Beta
+                        Sign Up / Sign In
                     </BrutalistButton>
                 </Link>
             </div>
@@ -266,15 +266,15 @@ const HeroSection = () => {
                         The definitive operating system for high-performers. Turn ambiguous goals into data-driven streaks.
                     </p>
 
-                    <div className="flex flex-wrap gap-6 pt-4">
+                    <div className="flex flex-wrap gap-6 pt-4 items-center">
                         <Link href="/dashboard">
                             <BrutalistButton color="bg-lime-400" textColor="text-black">
                                 Start Dashboard <ArrowRight className="w-5 h-5" />
                             </BrutalistButton>
                         </Link>
-                        <BrutalistButton color="bg-transparent" textColor="text-white" className="border-white">
-                            Watch Demo_v2.mp4
-                        </BrutalistButton>
+                        <span className="text-sm font-mono text-gray-500 uppercase tracking-widest animate-pulse">
+                            No Login Required
+                        </span>
                     </div>
                 </div>
 

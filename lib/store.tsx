@@ -87,27 +87,37 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
 
     const logActivity = async (type: string, description: string) => {
-        if (!userId) return;
         // Optimistic update
         const newActivity = { id: Date.now(), type, description, createdAt: new Date().toISOString() };
         setRecentActivities([newActivity, ...recentActivities].slice(0, 10)); // Keep top 10
 
-        await fetch('/api/activities', {
-            method: 'POST',
-            body: JSON.stringify({ userId, type, description }),
-        });
+        if (userId) {
+            await fetch('/api/activities', {
+                method: 'POST',
+                body: JSON.stringify({ userId, type, description }),
+            });
+        }
     };
 
     const addHabit = async (habit: Omit<Habit, "id" | "streak" | "completedDates">) => {
-        if (!userId) return;
-        const res = await fetch('/api/habits', {
-            method: 'POST',
-            body: JSON.stringify({ ...habit, userId }),
-        });
-        if (res.ok) {
-            const newHabit = await res.json();
-            setHabits([...habits, newHabit]);
-            logActivity('habit', `Started new habit: ${newHabit.title}`);
+        // Optimistic update for Guest Mode
+        const tempId = Date.now();
+        const newHabit = { ...habit, id: tempId, streak: 0, completedDates: [] };
+        setHabits([...habits, newHabit]);
+        // Only persist if user is logged in
+        if (userId) {
+            const res = await fetch('/api/habits', {
+                method: 'POST',
+                body: JSON.stringify({ ...habit, userId }),
+            });
+            if (res.ok) {
+                const createdHabit = await res.json();
+                // Replace temp habit with real one
+                setHabits(prev => prev.map(h => h.id === tempId ? createdHabit : h));
+                logActivity('habit', `Started new habit: ${createdHabit.title}`);
+            }
+        } else {
+            logActivity('habit', `Started new habit: ${newHabit.title} (Guest)`);
         }
     };
 
@@ -125,19 +135,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             newCompletedDates = [...habit.completedDates, targetDate];
         }
 
-        // Recalculate streak using centralized logic
-        // We need to import it dynamically or assume standard import available at top
-        // Since this is a client file, we can't easily dynamic import logic without useEffect async or just duplicating logic
-        // But for consistency we should import it. Let's add the import to the top of the file first in a separate step?
-        // Actually, let's just use the logic here directly or if we can make `calculateStreak` a client-safe utility.
-        // `lib/streak.ts` uses `date-fns` which IS client safe.
-        // So I will update the imports in the file header in a separate step, and here I will just call it.
-        // Wait, I can't modify imports easily in this chunk.
-        // I will implement the logic call here, but first I need to ensure `calculateStreak` is imported.
-        // Let's assume I will add the import.
-
         const newStreak = calculateStreak(newCompletedDates);
-
         const updates = { completedDates: newCompletedDates, streak: newStreak };
 
         // Optimistic Update
@@ -147,27 +145,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             logActivity('habit', `Completed habit: ${habit.title}`);
         }
 
-        await fetch(`/api/habits/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify({ ...updates, toggleDate: targetDate, userId: userId }),
-        });
+        if (userId) {
+            await fetch(`/api/habits/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ ...updates, toggleDate: targetDate, userId: userId }),
+            });
+        }
     };
 
     const deleteHabit = async (id: number) => {
         setHabits(habits.filter(h => h.id !== id));
-        await fetch(`/api/habits/${id}`, { method: 'DELETE' });
+        if (userId) {
+            await fetch(`/api/habits/${id}`, { method: 'DELETE' });
+        }
     };
 
     const addGoal = async (goal: Omit<Goal, "id" | "completed" | "progress">) => {
-        if (!userId) return;
-        const res = await fetch('/api/goals', {
-            method: 'POST',
-            body: JSON.stringify({ ...goal, userId }),
-        });
-        if (res.ok) {
-            const newGoal = await res.json();
-            setGoals([...goals, newGoal]);
-            logActivity('goal', `Set new goal: ${newGoal.title}`);
+        const tempId = Date.now();
+        const newGoal: Goal = { ...goal, id: tempId, completed: false, progress: 0 };
+        setGoals([...goals, newGoal]);
+
+        if (userId) {
+            const res = await fetch('/api/goals', {
+                method: 'POST',
+                body: JSON.stringify({ ...goal, userId }),
+            });
+            if (res.ok) {
+                const createdGoal = await res.json();
+                setGoals(prev => prev.map(g => g.id === tempId ? createdGoal : g));
+                logActivity('goal', `Set new goal: ${createdGoal.title}`);
+            }
+        } else {
+            logActivity('goal', `Set new goal: ${newGoal.title} (Guest)`);
         }
     };
 
@@ -177,27 +186,38 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const goal = goals.find(g => g.id === id);
             if (goal) logActivity('goal', `Completed goal: ${goal.title}`);
         }
-        await fetch(`/api/goals/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(updates),
-        });
+        if (userId) {
+            await fetch(`/api/goals/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(updates),
+            });
+        }
     };
 
     const deleteGoal = async (id: number) => {
         setGoals(goals.filter(g => g.id !== id));
-        await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+        if (userId) {
+            await fetch(`/api/goals/${id}`, { method: 'DELETE' });
+        }
     };
 
     const addTask = async (task: Omit<Task, "id" | "completed">) => {
-        if (!userId) return;
-        const res = await fetch('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify({ ...task, userId }),
-        });
-        if (res.ok) {
-            const newTask = await res.json();
-            setTasks([...tasks, newTask]);
-            logActivity('task', `Added task: ${newTask.title}`);
+        const tempId = Date.now();
+        const newTask: Task = { ...task, id: tempId, completed: false };
+        setTasks([...tasks, newTask]);
+
+        if (userId) {
+            const res = await fetch('/api/tasks', {
+                method: 'POST',
+                body: JSON.stringify({ ...task, userId }),
+            });
+            if (res.ok) {
+                const createdTask = await res.json();
+                setTasks(prev => prev.map(t => t.id === tempId ? createdTask : t));
+                logActivity('task', `Added task: ${createdTask.title}`);
+            }
+        } else {
+            logActivity('task', `Added task: ${newTask.title} (Guest)`);
         }
     };
 
@@ -214,10 +234,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             const task = tasks.find(t => t.id === id);
             if (task) logActivity('task', `Completed task: ${task.title}`);
         }
-        await fetch(`/api/tasks/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(finalUpdates),
-        });
+        if (userId) {
+            await fetch(`/api/tasks/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(finalUpdates),
+            });
+        }
     };
 
     const toggleTask = async (id: number) => {
@@ -235,32 +257,43 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             logActivity('task', `Completed task: ${task.title}`);
         }
 
-        await fetch(`/api/tasks/${id}`, {
-            method: 'PATCH',
-            body: JSON.stringify(updates),
-        });
+        if (userId) {
+            await fetch(`/api/tasks/${id}`, {
+                method: 'PATCH',
+                body: JSON.stringify(updates),
+            });
+        }
     };
 
     const deleteTask = async (id: number) => {
         setTasks(tasks.filter(t => t.id !== id));
-        await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        if (userId) {
+            await fetch(`/api/tasks/${id}`, { method: 'DELETE' });
+        }
     };
 
     const addEvent = async (event: Omit<CalendarEvent, "id">) => {
-        if (!userId) return;
-        const res = await fetch('/api/events', {
-            method: 'POST',
-            body: JSON.stringify({ ...event, userId }),
-        });
-        if (res.ok) {
-            const newEvent = await res.json();
-            setEvents([...events, newEvent]);
+        const tempId = Date.now();
+        const newEvent = { ...event, id: tempId };
+        setEvents([...events, newEvent]);
+
+        if (userId) {
+            const res = await fetch('/api/events', {
+                method: 'POST',
+                body: JSON.stringify({ ...event, userId }),
+            });
+            if (res.ok) {
+                const createdEvent = await res.json();
+                setEvents(prev => prev.map(e => e.id === tempId ? createdEvent : e));
+            }
         }
     };
 
     const deleteEvent = async (id: number) => {
         setEvents(events.filter(e => e.id !== id));
-        await fetch(`/api/events/${id}`, { method: 'DELETE' });
+        if (userId) {
+            await fetch(`/api/events/${id}`, { method: 'DELETE' });
+        }
     };
 
     return (
