@@ -11,10 +11,12 @@ import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 
+import { format } from "date-fns";
+
 export default function Home() {
   const { habits, goals, tasks, recentActivities } = useApp();
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
 
   // Logic Fix: Only count DAILY habits for the daily percentage
   const dailyHabits = habits.filter(h => h.frequency === 'daily');

@@ -3,12 +3,14 @@
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useApp } from "@/lib/store";
 
+import { format } from "date-fns";
+
 export function RadarStats() {
     const { habits, goals, tasks } = useApp();
 
     // Metric 1: Habit Consistency (Daily Completion Rate today)
     // Naive calc based on what we have in store for "today"
-    const today = new Date().toISOString().split('T')[0];
+    const today = format(new Date(), 'yyyy-MM-dd');
     const dailyHabits = habits.filter(h => h.frequency === 'daily');
     const totalDaily = dailyHabits.length;
     const completedDaily = dailyHabits.filter(h => h.completedDates.includes(today)).length;

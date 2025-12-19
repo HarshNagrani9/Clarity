@@ -38,8 +38,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [recentActivities, setRecentActivities] = useState<{ id: number, type: string, description: string, createdAt: string }[]>([]);
     const [userProfile, setUserProfile] = useState<{ displayName?: string, email?: string } | null>(null);
 
-    const authFetch = async (url: string, options: RequestInit = {}) => {
-        const token = await auth.currentUser?.getIdToken();
+    const authFetch = async (url: string, options: RequestInit = {}, explicitToken?: string) => {
+        const token = explicitToken || await auth.currentUser?.getIdToken();
         const headers = {
             ...options.headers,
             'Authorization': token ? `Bearer ${token}` : '',
@@ -67,7 +67,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                         displayName: user.displayName
                     })
                 });
-                await fetchData(user.uid);
+                await fetchData(user.uid, token);
             } else {
                 setUserId(null);
                 setUserProfile(null);
@@ -81,21 +81,30 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         return () => unsubscribe();
     }, []);
 
-    const fetchData = async (uid: string) => {
+    const fetchData = async (uid: string, token?: string) => {
         try {
             const [habitsRes, goalsRes, tasksRes, activitiesRes, eventsRes] = await Promise.all([
-                authFetch(`/api/habits?userId=${uid}`),
-                authFetch(`/api/goals?userId=${uid}`),
-                authFetch(`/api/tasks?userId=${uid}`),
-                authFetch(`/api/activities?userId=${uid}`),
-                authFetch(`/api/events?userId=${uid}`)
+                authFetch(`/api/habits?userId=${uid}`, {}, token),
+                authFetch(`/api/goals?userId=${uid}`, {}, token),
+                authFetch(`/api/tasks?userId=${uid}`, {}, token),
+                authFetch(`/api/activities?userId=${uid}`, {}, token),
+                authFetch(`/api/events?userId=${uid}`, {}, token)
             ]);
 
             if (habitsRes.ok) setHabits(await habitsRes.json());
+            else console.error("Failed to fetch habits:", habitsRes.status, await habitsRes.text());
+
             if (goalsRes.ok) setGoals(await goalsRes.json());
+            else console.error("Failed to fetch goals:", goalsRes.status, await goalsRes.text());
+
             if (tasksRes.ok) setTasks(await tasksRes.json());
+            else console.error("Failed to fetch tasks:", tasksRes.status, await tasksRes.text());
+
             if (activitiesRes.ok) setRecentActivities(await activitiesRes.json());
+            else console.error("Failed to fetch activities:", activitiesRes.status, await activitiesRes.text());
+
             if (eventsRes.ok) setEvents(await eventsRes.json());
+            else console.error("Failed to fetch events:", eventsRes.status, await eventsRes.text());
         } catch (error) {
             console.error("Failed to fetch data", error);
         }

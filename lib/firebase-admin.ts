@@ -8,7 +8,20 @@ interface FirebaseAdminConfig {
 }
 
 function formatPrivateKey(key: string) {
-    return key.replace(/\\n/g, "\n");
+    // If the key is surrounded by double quotes, remove them
+    let cleanKey = key.replace(/^"|"$/g, "");
+
+    // Replace literal "\n" strings (backslash + n) with actual newlines
+    if (cleanKey.includes("\\n")) {
+        cleanKey = cleanKey.replace(/\\n/g, "\n");
+    }
+
+    // Add usage of the private key headers if they are missing
+    if (!cleanKey.startsWith("-----BEGIN PRIVATE KEY-----")) {
+        cleanKey = `-----BEGIN PRIVATE KEY-----\n${cleanKey}\n-----END PRIVATE KEY-----\n`;
+    }
+
+    return cleanKey;
 }
 
 export function createFirebaseAdminApp(params: FirebaseAdminConfig) {
