@@ -17,7 +17,10 @@ import {
     Terminal,
     Cpu,
     MousePointer2,
-    Calendar
+    Calendar,
+    Mail,
+    Copy,
+    Check
 } from 'lucide-react';
 
 /* --- GEOMETRIC BACKGROUND --- */
@@ -243,6 +246,78 @@ const Navbar = ({ isMenuOpen, setIsMenuOpen }: any) => (
     </nav>
 );
 
+/* --- GUEST CREDENTIALS COMPONENT --- */
+const GuestCredentials = () => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [copiedAuth, setCopiedAuth] = useState<'email' | 'pass' | null>(null);
+
+    const handleCopy = (text: string, type: 'email' | 'pass') => {
+        navigator.clipboard.writeText(text);
+        setCopiedAuth(type);
+        setTimeout(() => setCopiedAuth(null), 2000);
+    };
+
+    if (!isOpen) {
+        return (
+            <div className="relative group cursor-pointer mt-4" onClick={() => setIsOpen(true)}>
+
+
+                <div className="flex items-center gap-3 bg-[#1a1a1a] border-2 border-white/10 px-4 py-3 rounded-xl hover:border-lime-400 hover:scale-105 transition-all shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                    <div className="w-10 h-10 bg-[#222] rounded-full flex items-center justify-center border border-white/10 group-hover:bg-lime-400 group-hover:text-black transition-colors">
+                        <Mail className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-sm text-gray-300 group-hover:text-white">Unlock Guest Access</span>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="mt-4 bg-[#1a1a1a] border-2 border-lime-400 rounded-xl p-4 w-full max-w-sm animate-in fade-in slide-in-from-bottom-2 shadow-[0_0_20px_rgba(163,230,53,0.15)] relative">
+            <button
+                onClick={(e) => { e.stopPropagation(); setIsOpen(false); }}
+                className="absolute top-2 right-2 text-gray-500 hover:text-white"
+            >
+                <X className="w-4 h-4" />
+            </button>
+            <div className="flex items-center gap-2 mb-3">
+                <div className="w-2 h-2 bg-lime-400 rounded-full animate-pulse" />
+                <span className="text-xs font-mono text-lime-400 uppercase tracking-widest">Guest Credentials</span>
+            </div>
+
+            <div className="space-y-3">
+                <div className="group bg-black/50 p-2 rounded border border-white/5 flex items-center justify-between hover:border-white/20 transition-colors">
+                    <div className="text-sm font-mono text-gray-400">guest@gmail.com</div>
+                    <button
+                        onClick={() => handleCopy('guest@gmail.com', 'email')}
+                        className="p-1.5 hover:bg-white/10 rounded text-gray-500 hover:text-white transition-colors"
+                        title="Copy Email"
+                    >
+                        {copiedAuth === 'email' ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                </div>
+
+                <div className="group bg-black/50 p-2 rounded border border-white/5 flex items-center justify-between hover:border-white/20 transition-colors">
+                    <div className="text-sm font-mono text-gray-400">123456</div>
+                    <button
+                        onClick={() => handleCopy('123456', 'pass')}
+                        className="p-1.5 hover:bg-white/10 rounded text-gray-500 hover:text-white transition-colors"
+                        title="Copy Password"
+                    >
+                        {copiedAuth === 'pass' ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+                    </button>
+                </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-white/5 text-center">
+                <Link href="/login" className="text-xs text-gray-500 hover:text-lime-400 transition-colors underline decoration-dotted underline-offset-4">
+                    Proceed to Login →
+                </Link>
+            </div>
+        </div>
+    );
+};
+
 const HeroSection = () => {
     return (
         <section className="min-h-[90vh] flex flex-col justify-center items-center px-6 relative pt-32 md:pt-0">
@@ -266,23 +341,15 @@ const HeroSection = () => {
                         The definitive operating system for high-performers. Turn ambiguous goals into data-driven streaks.
                     </p>
 
-                    <div className="flex flex-col gap-4 pt-4 items-start">
-                        <Link href="/signup" className="md:hidden">
+
+                    <div className="flex flex-col gap-6 pt-4 items-start w-full md:w-auto relative z-30">
+                        <Link href="/signup">
                             <BrutalistButton color="bg-white" textColor="text-black">
                                 Escape the Chaos
                             </BrutalistButton>
                         </Link>
 
-                        <div className="flex flex-wrap gap-4 items-center">
-                            <Link href="/dashboard">
-                                <BrutalistButton color="bg-lime-400" textColor="text-black">
-                                    Start Dashboard <ArrowRight className="w-5 h-5" />
-                                </BrutalistButton>
-                            </Link>
-                            <span className="text-sm font-mono text-gray-500 uppercase tracking-widest animate-pulse">
-                                No Login Required
-                            </span>
-                        </div>
+                        <GuestCredentials />
                     </div>
                 </div >
 
