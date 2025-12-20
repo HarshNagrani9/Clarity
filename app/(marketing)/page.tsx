@@ -266,15 +266,23 @@ const HeroSection = () => {
                         The definitive operating system for high-performers. Turn ambiguous goals into data-driven streaks.
                     </p>
 
-                    <div className="flex flex-wrap gap-6 pt-4 items-center">
-                        <Link href="/dashboard">
-                            <BrutalistButton color="bg-lime-400" textColor="text-black">
-                                Start Dashboard <ArrowRight className="w-5 h-5" />
+                    <div className="flex flex-col gap-4 pt-4 items-start">
+                        <Link href="/signup" className="md:hidden">
+                            <BrutalistButton color="bg-white" textColor="text-black">
+                                Escape the Chaos
                             </BrutalistButton>
                         </Link>
-                        <span className="text-sm font-mono text-gray-500 uppercase tracking-widest animate-pulse">
-                            No Login Required
-                        </span>
+
+                        <div className="flex flex-wrap gap-4 items-center">
+                            <Link href="/dashboard">
+                                <BrutalistButton color="bg-lime-400" textColor="text-black">
+                                    Start Dashboard <ArrowRight className="w-5 h-5" />
+                                </BrutalistButton>
+                            </Link>
+                            <span className="text-sm font-mono text-gray-500 uppercase tracking-widest animate-pulse">
+                                No Login Required
+                            </span>
+                        </div>
                     </div>
                 </div >
 
