@@ -91,8 +91,8 @@ export function HabitTrends({ habits }: HabitTrendsProps) {
                             <AreaChart data={dailyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorDaily" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3} />
-                                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} strokeOpacity={0.2} />
@@ -102,7 +102,7 @@ export function HabitTrends({ habits }: HabitTrendsProps) {
                                     contentStyle={{ backgroundColor: 'var(--card)', borderRadius: '8px', border: '1px solid var(--border)' }}
                                     labelStyle={{ color: 'var(--foreground)' }}
                                 />
-                                <Area type="monotone" dataKey="completed" name="Habits Done" stroke="#22c55e" fillOpacity={1} fill="url(#colorDaily)" />
+                                <Area type="monotone" dataKey="completed" name="Habits Done" stroke="#06b6d4" fillOpacity={1} fill="url(#colorDaily)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </TabsContent>
