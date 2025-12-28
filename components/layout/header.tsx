@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Search, Menu } from "lucide-react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,6 +12,7 @@ import { useApp } from "@/lib/store";
 
 export function Header() {
     const { userProfile } = useApp();
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const displayName = userProfile?.displayName || "User Name";
     const email = userProfile?.email || "user@example.com";
     const initials = displayName.substring(0, 2).toUpperCase();
@@ -18,7 +20,7 @@ export function Header() {
     return (
         <header className="flex h-16 items-center justify-between border-b px-6 bg-background/50 backdrop-blur-md sticky top-0 z-10 w-full">
             <div className="flex items-center gap-4 w-1/3">
-                <Sheet>
+                <Sheet open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
                     <SheetTrigger asChild>
                         <Button variant="ghost" size="icon" className="md:hidden">
                             <Menu className="h-5 w-5" />
@@ -26,7 +28,7 @@ export function Header() {
                     </SheetTrigger>
                     <SheetContent side="left" className="p-0 border-r border-[#333] bg-[#0f0f0f] w-[300px]">
                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                        <Sidebar className="border-none w-full" />
+                        <Sidebar className="border-none w-full" onNavClick={() => setIsMobileMenuOpen(false)} />
                     </SheetContent>
                 </Sheet>
 

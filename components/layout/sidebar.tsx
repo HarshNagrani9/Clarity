@@ -17,7 +17,7 @@ const navItems = [
     { href: "/calendar", label: "Calendar", icon: Calendar },
 ];
 
-export function Sidebar({ className }: { className?: string }) {
+export function Sidebar({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
     const pathname = usePathname();
     const router = useRouter();
     const [user, setUser] = useState<User | null>(null);
@@ -33,6 +33,7 @@ export function Sidebar({ className }: { className?: string }) {
         try {
             await signOut(auth);
             router.push("/");
+            onNavClick?.();
         } catch (error) {
             console.error("Error signing out:", error);
         }
@@ -49,18 +50,20 @@ export function Sidebar({ className }: { className?: string }) {
                     {navItems.map((item) => {
                         const isActive = pathname === item.href;
                         return (
-                            <Link key={item.href} href={item.href}>
-                                <Button
-                                    variant={isActive ? "secondary" : "ghost"}
-                                    className={cn(
-                                        "w-full justify-start gap-3 pl-4",
-                                        isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
-                                    )}
-                                >
+                            <Button
+                                key={item.href}
+                                variant={isActive ? "secondary" : "ghost"}
+                                className={cn(
+                                    "w-full justify-start gap-3 pl-4",
+                                    isActive ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-sidebar-accent/50"
+                                )}
+                                asChild
+                            >
+                                <Link href={item.href} onClick={onNavClick}>
                                     <item.icon className="h-5 w-5" />
                                     {item.label}
-                                </Button>
-                            </Link>
+                                </Link>
+                            </Button>
                         );
                     })}
                 </nav>
