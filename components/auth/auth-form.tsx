@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 interface AuthFormProps {
     mode: "signin" | "signup";
@@ -19,6 +20,8 @@ export function AuthForm({ mode }: AuthFormProps) {
     const [password, setPassword] = useState("");
     const [name, setName] = useState("");
     const [mobile, setMobile] = useState("");
+    const [otp, setOtp] = useState("");
+    const [otpSent, setOtpSent] = useState(false);
     const [loading, setLoading] = useState(false);
     const [googleLoading, setGoogleLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -64,34 +67,46 @@ export function AuthForm({ mode }: AuthFormProps) {
 
         try {
             if (mode === "signup") {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                if (!otpSent) {
+                    // Step 1: Send OTP
+                    const res = await fetch('/api/auth/otp/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Failed to send OTP");
 
-                // Update Firebase Profile
-                // Note: We need to dynamically import updateProfile or standard import if firebase/auth allows 
-                // But the 'auth' object is from context/lib. We should import { updateProfile } from "firebase/auth"
-                const { updateProfile } = await import("firebase/auth");
-                await updateProfile(userCredential.user, {
-                    displayName: name
-                });
+                    setOtpSent(true);
+                    toast.success("OTP sent to your email!");
+                } else {
+                    // Step 2: Verify OTP and Create User
+                    const res = await fetch('/api/auth/otp/verify', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, otp, password, name, mobile })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || "Failed to verify OTP");
 
-                // Sync to DB
-                await fetch('/api/users/sync', {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        uid: userCredential.user.uid,
-                        email,
-                        displayName: name,
-                        mobile
-                    })
-                });
+                    // Step 3: Sign in with Custom Token
+                    await signInWithCustomToken(auth, data.token);
+
+                    router.push("/dashboard");
+                    toast.success("Account created successfully!");
+                }
             } else {
                 await signInWithEmailAndPassword(auth, email, password);
-                // Sync happens in store onAuthStateChanged, but getting mobile might be tricky there if not in profile.
+                router.push("/dashboard");
             }
-            router.push("/dashboard");
         } catch (err: any) {
-            console.error(err);
-            setError(err.message || "An error occurred during authentication.");
+            // Only log actual system errors, not validation errors
+            if (err.message !== "Invalid or expired OTP" && err.message !== "User already exists") {
+                console.error("Auth Error:", err);
+            }
+            const message = err.message || "An error occurred during authentication.";
+            setError(message);
+            toast.error(message);
         } finally {
             setLoading(false);
         }
@@ -159,16 +174,32 @@ export function AuthForm({ mode }: AuthFormProps) {
                             autoCapitalize="none"
                             autoComplete={mode === "signup" ? "new-password" : "current-password"}
                             className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40"
-                            disabled={loading || googleLoading}
+                            disabled={loading || googleLoading || otpSent}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
                     </div>
+                    {otpSent && (
+                        <div className="grid gap-2">
+                            <Label htmlFor="otp" className="uppercase text-[10px] font-bold tracking-[0.2em] text-muted-foreground/70 mb-1.5">Verification Code</Label>
+                            <Input
+                                id="otp"
+                                placeholder="123456"
+                                type="text"
+                                className="h-10 bg-secondary/50 border-transparent focus:border-lime-400/50 focus:ring-lime-400/20 placeholder:text-muted-foreground/40 tracking-widest text-center"
+                                disabled={loading}
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                required
+                                maxLength={6}
+                            />
+                        </div>
+                    )}
                     {error && <p className="text-sm text-red-500">{error}</p>}
                     <Button disabled={loading || googleLoading}>
                         {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {mode === "signin" ? "Sign In" : "Sign Up"}
+                        {mode === "signin" ? "Sign In" : (otpSent ? "Verify & Create Account" : "Sign Up")}
                     </Button>
                 </div>
             </form>

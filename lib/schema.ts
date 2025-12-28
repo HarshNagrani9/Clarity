@@ -100,3 +100,11 @@ export const events = pgTable('events', {
     link: text('link'),
     createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const otpCodes = pgTable('otp_codes', {
+    id: serial('id').primaryKey(),
+    email: text('email').notNull(),
+    code: text('code').notNull(),
+    expiresAt: timestamp('expires_at').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+});

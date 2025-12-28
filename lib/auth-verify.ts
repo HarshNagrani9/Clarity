@@ -1,4 +1,4 @@
-import { initAdmin } from "./firebase-admin";
+import { adminAuth } from "./firebase-admin";
 import { headers } from "next/headers";
 
 export async function verifyAuth() {
@@ -10,8 +10,7 @@ export async function verifyAuth() {
     }
 
     try {
-        const admin = await initAdmin();
-        const decodedToken = await admin.auth().verifyIdToken(token);
+        const decodedToken = await adminAuth.verifyIdToken(token);
         return decodedToken;
     } catch (error) {
         console.error("Auth verification failed:", error);

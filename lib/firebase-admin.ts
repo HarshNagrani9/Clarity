@@ -40,12 +40,11 @@ export function createFirebaseAdminApp(params: FirebaseAdminConfig) {
     });
 }
 
-export async function initAdmin() {
-    const params = {
-        projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-        privateKey: process.env.FIREBASE_PRIVATE_KEY!,
-    };
+const params = {
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID!,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY!,
+};
 
-    return createFirebaseAdminApp(params);
-}
+const app = createFirebaseAdminApp(params);
+export const adminAuth = app.auth();
