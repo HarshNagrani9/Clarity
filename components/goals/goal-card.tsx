@@ -40,6 +40,8 @@ export function GoalCard({ goal, onUpdate, onDelete }: GoalCardProps) {
             progress,
             completed: progress === 100
         });
+
+
     };
 
     const handleGoalDateUpdate = (dateString: string) => {
