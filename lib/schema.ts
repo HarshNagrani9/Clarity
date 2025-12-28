@@ -114,5 +114,6 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
     userId: text('user_id').notNull(),
     endpoint: text('endpoint').notNull().unique(),
     keys: jsonb('keys').notNull(),
+    timezone: text('timezone').notNull().default('UTC'),
     createdAt: timestamp('created_at').defaultNow(),
 });

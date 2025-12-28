@@ -11,7 +11,8 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { subscription } = await request.json();
+        const requestBody = await request.json();
+        const { subscription } = requestBody;
 
         // Ensure subscription object is valid
         if (!subscription || !subscription.endpoint || !subscription.keys) {
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
                 userId: decodedToken.uid,
                 endpoint: subscription.endpoint,
                 keys: subscription.keys,
+                timezone: requestBody.timezone || 'UTC'
             });
         }
 
