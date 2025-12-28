@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Loader2 } from "lucide-react";
+import { PushNotificationManager } from "@/components/notifications/push-manager";
 
 export default function DashboardLayout({
     children,
@@ -45,6 +46,7 @@ export default function DashboardLayout({
                     {children}
                 </main>
             </div>
+            <PushNotificationManager />
         </div>
     );
 }

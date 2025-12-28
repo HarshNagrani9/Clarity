@@ -108,3 +108,11 @@ export const otpCodes = pgTable('otp_codes', {
     expiresAt: timestamp('expires_at').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
 });
+
+export const pushSubscriptions = pgTable('push_subscriptions', {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    endpoint: text('endpoint').notNull().unique(),
+    keys: jsonb('keys').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+});

@@ -9,6 +9,7 @@ import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/s
 import { Sidebar } from "@/components/layout/sidebar";
 
 import { useApp } from "@/lib/store";
+import { NotificationToggle } from "@/components/notifications/push-manager";
 
 export function Header() {
     const { userProfile } = useApp();
@@ -43,10 +44,7 @@ export function Header() {
             </div>
 
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" className="relative text-muted-foreground hover:text-foreground">
-                    <Bell className="h-5 w-5" />
-                    <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary ring-2 ring-background"></span>
-                </Button>
+                <NotificationToggle />
 
                 <div className="flex items-center gap-3 pl-4 border-l">
                     <div className="text-right hidden sm:block">
