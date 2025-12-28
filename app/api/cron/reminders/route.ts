@@ -25,7 +25,6 @@ export async function GET(request: Request) {
         const notificationsSent = [];
 
         // 2. Iterate through subscriptions to check if THEIR specific user has an event coming up
-        // (This is not the most optimized for scale, but it guarantees timezone correctness per user)
         for (const sub of subscriptions) {
             try {
                 const userTimezone = sub.timezone || 'UTC';
@@ -52,42 +51,22 @@ export async function GET(request: Request) {
                 for (const event of userEvents) {
                     if (!event.time) continue;
 
-                    // Parse event time locally relative to the user's timezone
-                    // Since we know the date is targetDateStr, constructs the full date
-                    const eventDateTimeStr = `${event.date}T${event.time}`;
-                    const eventNonZoned = new Date(eventDateTimeStr);
-                    // Note: direct string parse might imply local/UTC. 
-                    // Safer: Construct based on zonedNow's components but with event time.
-                    // Actually simpliest: 
-                    // We know zonedNow is in User Time. 
-                    // Let's rely on simple minute math.
+                    // Logic: Parse event time on that specific date
                     const [h, m] = event.time.split(':').map(Number);
-                    const eventDate = new Date(zonedNow); // Clone now (which is user-local-ish object or UTC equivalent?)
-                    // toZonedTime returns a Date object that represents the time components of the implementation timezone 
-                    // as if they were UTC. This trickiness of date-fns-tz means `zonedNow` "looks" like the user time 
-                    // if printed as UTC.
 
-                    // Actually, `toZonedTime` returns a Date object.
-                    // If we want to compare, we should construct the event date using the user's time components.
-                    // But `toZonedTime` shifts the milliseconds.
-
-                    // Robust way with `date-fns-tz`:
-                    // 1. We have `zonedNow` (date object shifted to appear as user local).
-                    // 2. We set the hours/minutes of `zonedNow` to match event.
-                    // 3. Check diff.
-
-                    // However, we must ensure we are on the correct DATE (targetDateStr).
-                    // `targetCenter` is already set to the correct date.
+                    // Construct event date based on our target center date
                     const eventTarget = new Date(targetCenter);
                     eventTarget.setHours(h);
                     eventTarget.setMinutes(m);
                     eventTarget.setSeconds(0);
                     eventTarget.setMilliseconds(0);
 
-                    // Calculate difference in minutes
+                    // Calculate difference in minutes from "user's now"
                     const diff = (eventTarget.getTime() - zonedNow.getTime()) / (1000 * 60);
 
                     // Check window: 25 <= diff < 35
+                    // Example: Event is at 3:25. Cron runs at 2:50 (Diff=35 -> Skip).
+                    //          Cron runs at 3:00 (Diff=25 -> MATCH).
                     if (diff >= 25 && diff < 35) {
                         const payload = JSON.stringify({
                             title: 'Upcoming Event',
