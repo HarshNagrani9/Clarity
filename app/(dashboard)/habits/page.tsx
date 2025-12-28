@@ -22,12 +22,14 @@ export default function HabitsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Habit Tracker</h2>
                     <p className="text-muted-foreground">Build consistency with daily and weekly habits.</p>
                 </div>
-                <AddHabitDialog onAdd={addHabit} />
+                <div className="w-full md:w-auto flex justify-end">
+                    <AddHabitDialog onAdd={addHabit} />
+                </div>
             </div>
 
             <div className="flex items-center justify-between bg-card p-3 rounded-lg border shadow-sm">

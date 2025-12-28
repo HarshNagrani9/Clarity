@@ -14,12 +14,14 @@ export default function TasksPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Tasks</h2>
                     <p className="text-muted-foreground">Manage your daily to-dos and priorities.</p>
                 </div>
-                <AddTaskDialog onAdd={addTask} />
+                <div className="w-full md:w-auto flex justify-end">
+                    <AddTaskDialog onAdd={addTask} />
+                </div>
             </div>
 
             <TaskHeatmap tasks={tasks} />

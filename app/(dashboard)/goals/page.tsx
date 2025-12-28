@@ -20,12 +20,12 @@ export default function GoalsPage() {
 
     return (
         <div className="space-y-6 h-[calc(100vh-100px)] flex flex-col">
-            <div className="flex items-center justify-between shrink-0">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Goals</h2>
                     <p className="text-muted-foreground">Track your long-term objectives and milestones.</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
                     <div className="flex bg-muted p-1 rounded-lg border">
                         <Button
                             variant={viewMode === "standard" ? "secondary" : "ghost"}

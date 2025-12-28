@@ -39,16 +39,18 @@ export default function Home() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           <p className="text-muted-foreground">Welcome back! Here's your overview for today.</p>
         </div>
-        <Link href="/calendar">
-          <Button>
-            <TrendingUp className="mr-2 h-4 w-4" /> View Calendar
-          </Button>
-        </Link>
+        <div className="w-full md:w-auto flex justify-end">
+          <Link href="/calendar">
+            <Button>
+              <TrendingUp className="mr-2 h-4 w-4" /> View Calendar
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

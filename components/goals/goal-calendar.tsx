@@ -73,7 +73,7 @@ export function GoalCalendar({ goals }: GoalCalendarProps) {
             <Dialog open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>
+                        <DialogTitle className="pr-8 leading-normal">
                             {selectedDate && format(selectedDate, "EEEE, MMMM do, yyyy")}
                         </DialogTitle>
                         <DialogDescription>
@@ -101,22 +101,22 @@ export function GoalCalendar({ goals }: GoalCalendarProps) {
             </Dialog>
 
             <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-                    <div className="flex items-center gap-4">
-                        <CardTitle className="text-xl font-bold">
+                <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 space-y-0 pb-4">
+                    <div className="flex flex-wrap items-center gap-4 w-full md:w-auto justify-between md:justify-start">
+                        <CardTitle className="text-xl font-bold whitespace-nowrap">
                             {format(currentMonth, "MMMM yyyy")}
                         </CardTitle>
                         <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowCompleted(!showCompleted)}
-                            className="text-xs h-7 px-2"
+                            className="text-xs h-7 px-2 shrink-0"
                         >
                             {showCompleted ? "Hide Completed" : "Show Completed"}
                         </Button>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 self-end md:self-auto">
                         <Button variant="outline" size="icon" onClick={prevMonth}>
                             <ChevronLeft className="h-4 w-4" />
                         </Button>
