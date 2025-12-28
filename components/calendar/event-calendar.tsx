@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, addMonths, subMonths, startOfWeek, endOfWeek } from "date-fns";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -15,7 +15,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 
 export function EventCalendar() {
     const isDesktop = useMediaQuery("(min-width: 768px)");
-    const { events, addEvent, deleteEvent, habits, tasks, goals } = useApp();
+    const { events, addEvent, deleteEvent, habits, tasks, goals, toggleHabit, toggleTask, updateGoal } = useApp();
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
     const [isAdding, setIsAdding] = useState(false);
@@ -83,8 +83,6 @@ export function EventCalendar() {
         }));
     };
 
-    // ...
-
     const handleAddEvent = async (formData: any) => {
         if (!selectedDate || !formData.title || isSubmitting) return;
 
@@ -138,12 +136,21 @@ export function EventCalendar() {
 
     return (
         <div className="flex flex-col h-full gap-4 relative">
-            {/* Inline Success Toast */}
+            {/* Improved Mobile Toast */}
             {showSuccess && (
-                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[100] bg-green-500 text-white px-6 py-3 rounded-full shadow-lg font-medium animate-in fade-in slide-in-from-top-4 duration-300">
-                    Event successfully added
+                <div className="fixed top-6 left-4 right-4 z-[100] flex items-center gap-3 bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-white px-4 py-3 rounded-2xl shadow-2xl animate-in slide-in-from-top-4 duration-500">
+                    <div className="w-8 h-8 rounded-full bg-green-500/20 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-sm font-semibold">Success</span>
+                        <span className="text-xs text-zinc-400">Event has been added to your calendar.</span>
+                    </div>
                 </div>
             )}
+
+            {/* ... */}
+
 
             {/* Mobile View: Horizontal Date Strip */}
             <div className="md:hidden">
@@ -185,6 +192,9 @@ export function EventCalendar() {
                         onDeleteEvent={handleDeleteEvent}
                         formData={formData}
                         setFormData={setFormData}
+                        onToggleHabit={(id) => toggleHabit(id, format(safeSelectedDate, 'yyyy-MM-dd'))}
+                        onToggleTask={toggleTask}
+                        onUpdateGoal={updateGoal}
                     />
                 </div>
             </div>
@@ -218,6 +228,9 @@ export function EventCalendar() {
                             onDeleteEvent={handleDeleteEvent}
                             formData={formData}
                             setFormData={setFormData}
+                            onToggleHabit={(id) => toggleHabit(id, format(safeSelectedDate, 'yyyy-MM-dd'))}
+                            onToggleTask={toggleTask}
+                            onUpdateGoal={updateGoal}
                         />
                     </DialogContent>
                 </Dialog>

@@ -1,5 +1,6 @@
-import { Trash2, Link as LinkIcon, Plus } from "lucide-react";
+import { Trash2, Link as LinkIcon, Plus, CheckCircle2, Circle } from "lucide-react";
 import { isBefore, startOfToday } from "date-fns";
+import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,10 @@ interface DailyAgendaProps {
     };
     isSubmitting?: boolean;
     setFormData: (data: any) => void;
+    onToggleHabit?: (id: number) => void;
+    onToggleTask?: (id: number) => void;
+    onToggleGoal?: (id: number) => void;
+    onUpdateGoal?: (id: number, updates: any) => void;
 }
 
 const getPriorityColor = (priority: string) => {
@@ -48,6 +53,10 @@ export function DailyAgenda({
     formData,
     setFormData,
     isSubmitting = false,
+    onToggleHabit,
+    onToggleTask,
+    onToggleGoal,
+    onUpdateGoal,
 }: DailyAgendaProps) {
 
     const handleSave = () => {
@@ -168,13 +177,26 @@ export function DailyAgenda({
                         {habits.map(habit => {
                             const isMissed = isBefore(date, startOfToday()) && !habit.isCompleted;
                             return (
-                                <div key={habit.id} className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50",
-                                    isMissed && "border-red-500/50 bg-red-500/5"
-                                )}>
-                                    <div className={cn("w-3 h-3 rounded-full shrink-0",
-                                        habit.isCompleted ? "bg-green-500" : (isMissed ? "bg-red-500" : "bg-zinc-700")
-                                    )} />
-                                    <span className={cn("flex-1",
+                                <div
+                                    key={habit.id}
+                                    onClick={() => {
+                                        if (onToggleHabit) {
+                                            if (!habit.isCompleted) {
+                                                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                                            }
+                                            onToggleHabit(habit.id);
+                                        }
+                                    }}
+                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all cursor-pointer hover:bg-accent active:scale-[0.98] select-none",
+                                        isMissed && "border-red-500/50 bg-red-500/5"
+                                    )}
+                                >
+                                    <div className={cn("w-5 h-5 rounded-full shrink-0 flex items-center justify-center transition-colors border",
+                                        habit.isCompleted ? "bg-green-500 border-green-500 text-white" : (isMissed ? "bg-red-500 border-red-500 text-white" : "bg-transparent border-zinc-500 text-transparent")
+                                    )}>
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </div>
+                                    <span className={cn("flex-1 transition-all",
                                         habit.isCompleted && "line-through text-muted-foreground",
                                         isMissed && "text-red-500 font-medium"
                                     )}>{habit.title}</span>
@@ -195,13 +217,26 @@ export function DailyAgenda({
                         {tasks.map(task => {
                             const isMissed = isBefore(date, startOfToday()) && !task.completed;
                             return (
-                                <div key={`t-${task.id}`} className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50",
-                                    isMissed && "border-red-500/50 bg-red-500/5"
-                                )}>
-                                    <div className={cn("w-3 h-3 rounded-full shrink-0",
-                                        task.completed ? "bg-zinc-600" : (isMissed ? "bg-red-500" : getPriorityColor(task.priority))
-                                    )} />
-                                    <span className={cn("flex-1",
+                                <div
+                                    key={`t-${task.id}`}
+                                    onClick={() => {
+                                        if (onToggleTask) {
+                                            if (!task.completed) {
+                                                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, colors: ['#3b82f6', '#22d3ee'] });
+                                            }
+                                            onToggleTask(task.id);
+                                        }
+                                    }}
+                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all cursor-pointer hover:bg-accent active:scale-[0.98] select-none",
+                                        isMissed && "border-red-500/50 bg-red-500/5"
+                                    )}
+                                >
+                                    <div className={cn("w-5 h-5 rounded-full shrink-0 flex items-center justify-center transition-colors border",
+                                        task.completed ? "bg-zinc-600 border-zinc-600 text-white" : (isMissed ? "bg-red-500 border-red-500 text-white" : "bg-transparent border-zinc-500 text-transparent")
+                                    )}>
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </div>
+                                    <span className={cn("flex-1 transition-all",
                                         task.completed && "line-through text-muted-foreground",
                                         isMissed && "text-red-500 font-medium"
                                     )}>{task.title}</span>
@@ -222,12 +257,25 @@ export function DailyAgenda({
                         {goals.map(goal => {
                             const isMissed = isBefore(date, startOfToday()) && !goal.completed;
                             return (
-                                <div key={`g-${goal.id}`} className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50",
-                                    isMissed && "border-red-500/50 bg-red-500/5"
-                                )}>
-                                    <div className={cn("w-3 h-3 rounded-full shrink-0",
-                                        goal.completed ? "bg-green-500" : (isMissed ? "bg-red-500" : "bg-purple-500")
-                                    )} />
+                                <div
+                                    key={`g-${goal.id}`}
+                                    onClick={() => {
+                                        if (onToggleGoal) {
+                                            if (!goal.completed) {
+                                                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+                                            }
+                                            onToggleGoal(goal.id);
+                                        }
+                                    }}
+                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all cursor-pointer hover:bg-accent active:scale-[0.98] select-none",
+                                        isMissed && "border-red-500/50 bg-red-500/5"
+                                    )}
+                                >
+                                    <div className={cn("w-5 h-5 rounded-full shrink-0 flex items-center justify-center transition-colors border",
+                                        goal.completed ? "bg-green-500 border-green-500 text-white" : (isMissed ? "bg-red-500 border-red-500 text-white" : "bg-transparent border-zinc-500 text-transparent")
+                                    )} >
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                    </div>
                                     <span className={cn("flex-1",
                                         goal.completed && "line-through text-muted-foreground",
                                         isMissed && "text-red-500 font-medium"
