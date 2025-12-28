@@ -49,3 +49,12 @@ export interface CalendarEvent {
     time?: string;
     link?: string;
 }
+
+export interface UserProfile {
+    uid: string;
+    email: string;
+    displayName?: string;
+    preferences?: {
+        goalsView?: 'standard' | 'schedule';
+    };
+}

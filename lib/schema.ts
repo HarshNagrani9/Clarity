@@ -21,6 +21,7 @@ export const users = pgTable('users', {
     email: text('email').notNull(),
     displayName: text('display_name'),
     mobile: text('mobile'),
+    preferences: jsonb('preferences').default({}), // Store user settings like view modes
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });

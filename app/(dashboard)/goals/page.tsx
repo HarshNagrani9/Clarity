@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useApp } from "@/lib/store";
 import { AddGoalDialog } from "@/components/goals/add-goal-dialog";
 import { GoalCard } from "@/components/goals/goal-card";
@@ -12,8 +12,19 @@ import { LayoutGrid, CalendarDays } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function GoalsPage() {
-    const { goals, addGoal, updateGoal, deleteGoal } = useApp();
+    const { goals, addGoal, updateGoal, deleteGoal, userProfile, updatePreferences } = useApp();
     const [viewMode, setViewMode] = useState<"standard" | "schedule">("standard");
+
+    useEffect(() => {
+        if (userProfile?.preferences?.goalsView) {
+            setViewMode(userProfile.preferences.goalsView);
+        }
+    }, [userProfile?.preferences?.goalsView]);
+
+    const handleViewChange = (mode: "standard" | "schedule") => {
+        setViewMode(mode);
+        updatePreferences({ goalsView: mode });
+    };
 
     const activeGoals = goals.filter(g => !g.completed);
     const completedGoals = goals.filter(g => g.completed);
@@ -30,7 +41,7 @@ export default function GoalsPage() {
                         <Button
                             variant={viewMode === "standard" ? "secondary" : "ghost"}
                             size="sm"
-                            onClick={() => setViewMode("standard")}
+                            onClick={() => handleViewChange("standard")}
                             className="flex-1 sm:flex-none h-8 px-2 gap-2"
                         >
                             <LayoutGrid className="w-4 h-4" /> <span className="inline">Standard</span>
@@ -38,7 +49,7 @@ export default function GoalsPage() {
                         <Button
                             variant={viewMode === "schedule" ? "secondary" : "ghost"}
                             size="sm"
-                            onClick={() => setViewMode("schedule")}
+                            onClick={() => handleViewChange("schedule")}
                             className="flex-1 sm:flex-none h-8 px-2 gap-2"
                         >
                             <CalendarDays className="w-4 h-4" /> <span className="inline">Schedule</span>

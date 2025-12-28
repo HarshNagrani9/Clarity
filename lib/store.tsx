@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { Habit, Goal, Task, CalendarEvent } from "@/lib/types";
+import { Habit, Goal, Task, CalendarEvent, UserProfile } from "@/lib/types";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { calculateStreak } from '@/lib/streak';
@@ -11,7 +11,7 @@ export interface AppState {
     goals: Goal[];
     tasks: Task[];
     events: CalendarEvent[];
-    userProfile: { displayName?: string, email?: string } | null;
+    userProfile: UserProfile | null;
     recentActivities: { id: number, type: string, description: string, createdAt: string }[];
     addHabit: (habit: Omit<Habit, "id" | "streak" | "completedDates">) => void;
     toggleHabit: (id: number, date?: string) => void;
@@ -25,6 +25,7 @@ export interface AppState {
     deleteTask: (id: number) => void;
     addEvent: (event: Omit<CalendarEvent, "id">) => void;
     deleteEvent: (id: number) => void;
+    updatePreferences: (prefs: Partial<UserProfile['preferences']>) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -36,7 +37,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     const [events, setEvents] = useState<CalendarEvent[]>([]);
     const [userId, setUserId] = useState<string | null>(null);
     const [recentActivities, setRecentActivities] = useState<{ id: number, type: string, description: string, createdAt: string }[]>([]);
-    const [userProfile, setUserProfile] = useState<{ displayName?: string, email?: string } | null>(null);
+    const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
     const authFetch = async (url: string, options: RequestInit = {}, explicitToken?: string) => {
         const token = explicitToken || await auth.currentUser?.getIdToken();
@@ -52,8 +53,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setUserId(user.uid);
-                setUserProfile({ displayName: user.displayName || undefined, email: user.email || undefined });
-                // Sync user data
+                // Initial basic set
+                setUserProfile({ uid: user.uid, email: user.email || "", displayName: user.displayName || undefined });
+
                 const token = await user.getIdToken();
                 await fetch('/api/users/sync', {
                     method: 'POST',
@@ -67,6 +69,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                         displayName: user.displayName
                     })
                 });
+
+                // Fetch full profile including preferences
+                const profileRes = await authFetch('/api/users/profile', {}, token);
+                if (profileRes.ok) {
+                    const profileData = await profileRes.json();
+                    setUserProfile(prev => ({ ...prev, ...profileData })); // Merge or set
+                }
+
                 await fetchData(user.uid, token);
             } else {
                 setUserId(null);
@@ -107,6 +117,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             else console.error("Failed to fetch events:", eventsRes.status, await eventsRes.text());
         } catch (error) {
             console.error("Failed to fetch data", error);
+        }
+    };
+
+    const updatePreferences = async (newPrefs: Partial<UserProfile['preferences']>) => {
+        if (!userProfile) return;
+
+        const updatedPrefs = { ...userProfile.preferences, ...newPrefs };
+        setUserProfile({ ...userProfile, preferences: updatedPrefs });
+
+        if (userId) {
+            await authFetch('/api/users/profile', {
+                method: 'PATCH',
+                body: JSON.stringify({ preferences: updatedPrefs }),
+            });
         }
     };
 
@@ -326,7 +350,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             addHabit, toggleHabit, deleteHabit,
             addGoal, updateGoal, deleteGoal,
             addTask, updateTask, toggleTask, deleteTask,
-            addEvent, deleteEvent
+            addEvent, deleteEvent,
+            updatePreferences
         }}>
             {children}
         </AppContext.Provider>
