@@ -101,7 +101,7 @@ export function GoogleCalendarGoalsView({ goals }: GoogleCalendarGoalsViewProps)
     }, [scheduleItems]);
 
     return (
-        <div className="flex flex-col h-full bg-background rounded-xl border shadow-sm overflow-hidden">
+        <div className="flex flex-col bg-background rounded-xl border shadow-sm">
             {/* Calendar Header / Strip */}
             <div className="bg-card border-b p-4">
                 <div className="flex items-center justify-between mb-4">
@@ -147,7 +147,7 @@ export function GoogleCalendarGoalsView({ goals }: GoogleCalendarGoalsViewProps)
             </div>
 
             {/* Schedule List */}
-            <div className="flex-1 overflow-y-auto bg-background/50 relative">
+            <div className="relative">
                 {Object.keys(groupedSchedule).length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center bg-[url('https://images.unsplash.com/photo-1506784983877-45594efa4cbe?q=80&w=2668&auto=format&fit=crop')] bg-cover bg-center bg-blend-overlay bg-background/90">
                         <p className="text-lg font-medium">No Upcoming Goals</p>

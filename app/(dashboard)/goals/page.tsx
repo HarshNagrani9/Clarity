@@ -19,29 +19,29 @@ export default function GoalsPage() {
     const completedGoals = goals.filter(g => g.completed);
 
     return (
-        <div className="space-y-6 h-[calc(100vh-100px)] flex flex-col">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shrink-0">
+        <div className="space-y-6">
+            <div className="flex flex-col gap-4 mb-6">
                 <div>
                     <h2 className="text-3xl font-bold tracking-tight">Goals</h2>
                     <p className="text-muted-foreground">Track your long-term objectives and milestones.</p>
                 </div>
-                <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
-                    <div className="flex bg-muted p-1 rounded-lg border">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full justify-between">
+                    <div className="flex bg-muted p-1 rounded-lg border w-full sm:w-auto">
                         <Button
                             variant={viewMode === "standard" ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("standard")}
-                            className="h-8 px-2 gap-2"
+                            className="flex-1 sm:flex-none h-8 px-2 gap-2"
                         >
-                            <LayoutGrid className="w-4 h-4" /> <span className="hidden sm:inline">Standard</span>
+                            <LayoutGrid className="w-4 h-4" /> <span className="inline">Standard</span>
                         </Button>
                         <Button
                             variant={viewMode === "schedule" ? "secondary" : "ghost"}
                             size="sm"
                             onClick={() => setViewMode("schedule")}
-                            className="h-8 px-2 gap-2"
+                            className="flex-1 sm:flex-none h-8 px-2 gap-2"
                         >
-                            <CalendarDays className="w-4 h-4" /> <span className="hidden sm:inline">Schedule</span>
+                            <CalendarDays className="w-4 h-4" /> <span className="inline">Schedule</span>
                         </Button>
                     </div>
                     <AddGoalDialog onAdd={addGoal} />
@@ -49,9 +49,9 @@ export default function GoalsPage() {
             </div>
 
             {/* View Content */}
-            <div className="flex-1 min-h-0">
+            <div className="w-full">
                 {viewMode === "standard" ? (
-                    <div className="space-y-6 overflow-y-auto h-full pr-2 pb-10">
+                    <div className="space-y-6 pb-10">
                         <GoalCalendar goals={goals} />
 
                         <Tabs defaultValue="active" className="w-full">
@@ -100,7 +100,7 @@ export default function GoalsPage() {
                         </Tabs>
                     </div>
                 ) : (
-                    <div className="h-full">
+                    <div>
                         <GoogleCalendarGoalsView goals={goals} />
                     </div>
                 )}
