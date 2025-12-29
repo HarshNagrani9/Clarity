@@ -105,7 +105,6 @@ import { events, pushSubscriptions } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import webpush from 'web-push';
 import { addMinutes } from 'date-fns';
-// NEW IMPORT
 import { fromZonedTime } from 'date-fns-tz';
 
 webpush.setVapidDetails(
