@@ -1,7 +1,8 @@
 import { Trash2, Link as LinkIcon, Plus, CheckCircle2, Circle } from "lucide-react";
-import { isBefore, startOfToday } from "date-fns";
+import { isBefore, startOfToday, isAfter } from "date-fns";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -180,6 +181,10 @@ export function DailyAgenda({
                                 <div
                                     key={habit.id}
                                     onClick={() => {
+                                        if (isAfter(date, startOfToday())) {
+                                            toast.error("Cannot complete habits for future dates");
+                                            return;
+                                        }
                                         if (onToggleHabit) {
                                             if (!habit.isCompleted) {
                                                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
@@ -187,7 +192,8 @@ export function DailyAgenda({
                                             onToggleHabit(habit.id);
                                         }
                                     }}
-                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all cursor-pointer hover:bg-accent active:scale-[0.98] select-none",
+                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all select-none",
+                                        isAfter(date, startOfToday()) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-accent active:scale-[0.98]",
                                         isMissed && "border-red-500/50 bg-red-500/5"
                                     )}
                                 >

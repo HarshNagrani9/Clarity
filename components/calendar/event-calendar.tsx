@@ -73,7 +73,10 @@ export function EventCalendar() {
     const getHabitsForDate = (date: Date) => {
         const dateStr = format(date, 'yyyy-MM-dd');
         return habits.filter(h => {
-            if (h.startDate && dateStr < h.startDate) return false; // Don't show before start date
+            if (h.startDate) {
+                const startDateStr = format(new Date(h.startDate), 'yyyy-MM-dd');
+                if (dateStr < startDateStr) return false;
+            }
             if (h.frequency === 'daily') return true;
             if (h.frequency === 'weekly') return true; // Simplified for now
             return false;
