@@ -63,7 +63,8 @@ export function EventCalendar() {
             id: g.id,
             title: g.title,
             type: 'goal' as const,
-            completed: g.completed
+            completed: g.completed,
+            milestones: g.milestones
         }));
 
         return { events: dayEvents, tasks: dayTasks, goals: dayGoals };
@@ -210,7 +211,7 @@ export function EventCalendar() {
                         resetForm();
                     }
                 }}>
-                    <DialogContent className="max-w-md">
+                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>
                                 {selectedDate && format(selectedDate, "EEEE, MMMM do, yyyy")}

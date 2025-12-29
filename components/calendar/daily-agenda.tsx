@@ -268,6 +268,13 @@ export function DailyAgenda({
                                     onClick={() => {
                                         if (onToggleGoal) {
                                             if (!goal.completed) {
+                                                // Check milestones
+                                                const milestones = goal.milestones || [];
+                                                const hasPending = milestones.some((m: any) => !m.completed);
+                                                if (hasPending) {
+                                                    toast.error("Complete all milestones first!");
+                                                    return;
+                                                }
                                                 confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
                                             }
                                             onToggleGoal(goal.id);
