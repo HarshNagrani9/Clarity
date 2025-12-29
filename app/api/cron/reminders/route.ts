@@ -102,10 +102,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { events, pushSubscriptions } from '@/lib/schema';
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import webpush from 'web-push';
-import { addMinutes, format } from 'date-fns';
-import { toZonedTime, fromZonedTime } from 'date-fns-tz'; // Ensure you have date-fns-tz installed
+import { addMinutes, subMinutes } from 'date-fns';
 
 webpush.setVapidDetails(
     'mailto:noreply@clarity.com',
@@ -115,6 +114,18 @@ webpush.setVapidDetails(
 
 export async function GET(request: Request) {
     try {
+        // 1. Current Server Time (UTC)
+        const now = new Date();
+
+        // 2. Calculate the Window
+        // We want events that are roughly 30 minutes from now.
+        // We look for events scheduled between "Now + 25m" and "Now + 35m"
+        const startWindow = addMinutes(now, 25);
+        const endWindow = addMinutes(now, 35);
+
+        // Debugging: Log the window we are searching for (UTC)
+        console.log(`Checking for events between UTC: ${startWindow.toISOString()} and ${endWindow.toISOString()}`);
+
         const subscriptions = await db.select().from(pushSubscriptions);
 
         if (subscriptions.length === 0) {
@@ -123,46 +134,34 @@ export async function GET(request: Request) {
 
         const notificationsSent = [];
 
-        // 1. Current Absolute Server Time (UTC)
-        const now = new Date();
-
         for (const sub of subscriptions) {
             try {
-                // If sub.timezone is null, this defaults to UTC and CAUSES your 5.5h bug.
-                // Ensure your frontend saves 'Asia/Kolkata' for Indian users.
-                const userTimezone = sub.timezone || 'UTC';
-
-                // 2. Find out what date it is for the user RIGHT NOW + 30 mins
-                // We use this strictly to filter the DB query (optimization)
-                const zonedNow = toZonedTime(now, userTimezone);
-                const searchWindowCenter = addMinutes(zonedNow, 30);
-                const searchDateStr = format(searchWindowCenter, 'yyyy-MM-dd');
-
-                // 3. Get events for that specific date string
+                // 3. Fetch events for this user
+                // OPTIMIZATION: Instead of fetching everything and filtering in JS,
+                // let's try to filter in the DB or fetch all future events and filter here.
+                // Assuming 'events.date' holds the full timestamp "2025-12-29 08:10:00"
                 const userEvents = await db.select().from(events).where(
-                    and(
-                        eq(events.userId, sub.userId),
-                        eq(events.date, searchDateStr)
-                    )
+                    eq(events.userId, sub.userId)
                 );
 
                 for (const event of userEvents) {
-                    if (!event.time) continue;
+                    // Parse the DB timestamp. 
+                    // Note: If DB string is "2025-12-29 08:10:00", adding 'Z' forces it to be treated as UTC.
+                    // If your DB driver returns a Date object automatically, you don't need 'Z'.
+                    let eventTime = new Date(event.date);
 
-                    // 4. Construct the Event's ABSOLUTE timestamp
-                    // Combine the stored date and time strings: "2024-12-29T14:30:00"
-                    const eventDateTimeStr = `${event.date}T${event.time}`; // Ensure event.time is HH:mm or HH:mm:ss
+                    // Fallback: If it's a string without timezone info, treat it as UTC
+                    if (typeof event.date === 'string' && !event.date.includes('Z')) {
+                        eventTime = new Date(event.date.replace(' ', 'T') + 'Z');
+                    }
 
-                    // Convert that Local String -> Absolute UTC Date Object using the User's Timezone
-                    const eventAbsoluteDate = fromZonedTime(eventDateTimeStr, userTimezone);
+                    // 4. Calculate Difference
+                    const diffInMinutes = (eventTime.getTime() - now.getTime()) / (1000 * 60);
 
-                    // 5. Calculate diff in minutes using Absolute Timestamps
-                    // (Event Time - Current Server Time)
-                    const diffInMinutes = (eventAbsoluteDate.getTime() - now.getTime()) / (1000 * 60);
+                    // Debug log to verify math
+                    // console.log(`Event: ${event.title} | Target (UTC): ${eventTime.toISOString()} | Diff: ${diffInMinutes.toFixed(2)}m`);
 
-                    // console.log(`Debug: User ${sub.userId} | Event: ${event.title} | Diff: ${diffInMinutes.toFixed(2)} mins`);
-
-                    // Check window: 25 <= diff < 35
+                    // 5. Check if it matches the 30-minute window
                     if (diffInMinutes >= 25 && diffInMinutes < 35) {
                         const payload = JSON.stringify({
                             title: 'Upcoming Event',
@@ -175,15 +174,9 @@ export async function GET(request: Request) {
                             keys: sub.keys as any
                         }, payload);
 
-                        notificationsSent.push({
-                            event: event.title,
-                            user: sub.userId,
-                            scheduledFor: eventDateTimeStr,
-                            sentAt: new Date().toISOString()
-                        });
+                        notificationsSent.push({ event: event.title, user: sub.userId });
                     }
                 }
-
             } catch (err: any) {
                 console.error(`Error processing sub ${sub.id}:`, err);
                 if (err.statusCode === 410) {
