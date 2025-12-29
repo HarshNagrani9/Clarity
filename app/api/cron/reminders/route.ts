@@ -102,9 +102,11 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { events, pushSubscriptions } from '@/lib/schema';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import webpush from 'web-push';
-import { addMinutes, subMinutes } from 'date-fns';
+import { addMinutes } from 'date-fns';
+// NEW IMPORT
+import { fromZonedTime } from 'date-fns-tz';
 
 webpush.setVapidDetails(
     'mailto:noreply@clarity.com',
@@ -114,17 +116,11 @@ webpush.setVapidDetails(
 
 export async function GET(request: Request) {
     try {
-        // 1. Current Server Time (UTC)
+        // 1. Current Server Time (This is always UTC in Vercel/Cron)
         const now = new Date();
 
-        // 2. Calculate the Window
-        // We want events that are roughly 30 minutes from now.
-        // We look for events scheduled between "Now + 25m" and "Now + 35m"
-        const startWindow = addMinutes(now, 25);
-        const endWindow = addMinutes(now, 35);
-
-        // Debugging: Log the window we are searching for (UTC)
-        console.log(`Checking for events between UTC: ${startWindow.toISOString()} and ${endWindow.toISOString()}`);
+        // 2. We don't calculate the window here anymore. 
+        // We will calculate the "diff" for every event individually based on its timezone.
 
         const subscriptions = await db.select().from(pushSubscriptions);
 
@@ -136,32 +132,37 @@ export async function GET(request: Request) {
 
         for (const sub of subscriptions) {
             try {
-                // 3. Fetch events for this user
-                // OPTIMIZATION: Instead of fetching everything and filtering in JS,
-                // let's try to filter in the DB or fetch all future events and filter here.
-                // Assuming 'events.date' holds the full timestamp "2025-12-29 08:10:00"
+                // Fetch events for this user
                 const userEvents = await db.select().from(events).where(
                     eq(events.userId, sub.userId)
                 );
 
+                // Get the user's timezone from the subscription table
+                // If missing, fallback to UTC (which mimics your old behavior)
+                const userTimezone = sub.timezone || 'UTC';
+
                 for (const event of userEvents) {
-                    // Parse the DB timestamp. 
-                    // Note: If DB string is "2025-12-29 08:10:00", adding 'Z' forces it to be treated as UTC.
-                    // If your DB driver returns a Date object automatically, you don't need 'Z'.
-                    let eventTime = new Date(event.date);
 
-                    // Fallback: If it's a string without timezone info, treat it as UTC
-                    if (typeof event.date === 'string' && !event.date.includes('Z')) {
-                        eventTime = new Date(event.date.replace(' ', 'T') + 'Z');
-                    }
+                    // FIX STARTS HERE -----------------------------------------
 
-                    // 4. Calculate Difference
+                    // We assume event.date is a string like "2025-12-29 14:00:00"
+                    // We combine this string with the user's timezone to get the REAL absolute time.
+
+                    // This converts "14:00" in "Asia/Kolkata" -> Date Object (08:30 UTC)
+                    const eventTime = fromZonedTime(event.date, userTimezone);
+
+                    // ---------------------------------------------------------
+
+                    // 3. Calculate Difference
+                    // Now we are comparing two UTC objects:
+                    // 1. now (Current Real UTC)
+                    // 2. eventTime (Event's Real UTC)
                     const diffInMinutes = (eventTime.getTime() - now.getTime()) / (1000 * 60);
 
-                    // Debug log to verify math
-                    // console.log(`Event: ${event.title} | Target (UTC): ${eventTime.toISOString()} | Diff: ${diffInMinutes.toFixed(2)}m`);
+                    // Debugging (Remove in production)
+                    // console.log(`User TZ: ${userTimezone} | Event: ${event.title} | Diff: ${diffInMinutes}m`);
 
-                    // 5. Check if it matches the 30-minute window
+                    // 4. Check if it matches the 30-minute window
                     if (diffInMinutes >= 25 && diffInMinutes < 35) {
                         const payload = JSON.stringify({
                             title: 'Upcoming Event',
