@@ -48,9 +48,31 @@ export function PushNotificationManager() {
         const sub = await registration.pushManager.getSubscription();
         setSubscription(sub);
 
+        if (sub) {
+            // SYNC: Ensure backend has this subscription + current timezone
+            const { auth } = await import('@/lib/firebase');
+            // Wait for auth to be ready
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const token = await user.getIdToken();
+                    await fetch('/api/notifications/subscribe', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            subscription: sub,
+                            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                        }),
+                    }).catch(err => console.error("Sync failed", err));
+                }
+            });
+        }
+
         // If no subscription and permission is default, ask
         if (!sub && Notification.permission === 'default') {
-            // Check if user dismissed it recently to avoid spam (optional, skipped for now)
             const hasDismissed = localStorage.getItem('push_dismissed');
             if (!hasDismissed) {
                 setOpen(true);
