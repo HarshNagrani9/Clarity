@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface DailyAgendaProps {
+
     date: Date;
     events: any[];
     habits: any[];
