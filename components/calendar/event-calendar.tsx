@@ -239,8 +239,8 @@ export function EventCalendar() {
                     </DialogContent>
                 </Dialog>
 
-                <Card className="h-full border-none shadow-none">
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-0">
+                <Card className="h-full border-none shadow-none flex flex-col">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 px-6 shrink-0">
                         <CardTitle className="text-2xl font-bold">
                             {format(currentMonth, "MMMM yyyy")}
                         </CardTitle>
@@ -253,7 +253,7 @@ export function EventCalendar() {
                             </Button>
                         </div>
                     </CardHeader>
-                    <CardContent className="px-0">
+                    <CardContent className="px-4 flex-1 overflow-y-auto min-h-0">
                         <div className="grid grid-cols-7 gap-4 mb-4 text-center text-sm font-medium text-muted-foreground">
                             {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
                                 <div key={day}>{day}</div>
