@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import type { User } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Bell, BellOff } from 'lucide-react';
 import { toast } from 'sonner';
@@ -53,7 +54,7 @@ export function PushNotificationManager() {
             const { auth } = await import('@/lib/firebase');
             // Wait for auth to be ready
 
-            auth.onAuthStateChanged(async (user) => {
+            auth.onAuthStateChanged(async (user: User | null) => {
                 if (user) {
                     const token = await user.getIdToken();
                     await fetch('/api/notifications/subscribe', {
