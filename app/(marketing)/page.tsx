@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { useRouter } from "next/navigation";
+import { auth } from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import {
     CheckCircle,
     Target,
@@ -156,6 +159,17 @@ const FluxBar = ({ index, mousePos, col, row }: any) => {
 export default function LandingPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [tickerOffset, setTickerOffset] = useState(0);
+    const router = useRouter();
+
+    // Check for existing session
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user) {
+                router.push("/dashboard");
+            }
+        });
+        return () => unsubscribe();
+    }, [router]);
 
     // Simple Ticker Animation Loop
     useEffect(() => {

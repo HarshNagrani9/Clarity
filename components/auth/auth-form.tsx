@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signInWithCustomToken, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         setGoogleLoading(true);
         setError(null);
         try {
+            await setPersistence(auth, browserLocalPersistence);
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
@@ -90,12 +91,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                     if (!res.ok) throw new Error(data.error || "Failed to verify OTP");
 
                     // Step 3: Sign in with Custom Token
+                    await setPersistence(auth, browserLocalPersistence);
                     await signInWithCustomToken(auth, data.token);
 
                     router.push("/dashboard");
                     toast.success("Account created successfully!");
                 }
             } else {
+                await setPersistence(auth, browserLocalPersistence);
                 await signInWithEmailAndPassword(auth, email, password);
                 router.push("/dashboard");
             }
