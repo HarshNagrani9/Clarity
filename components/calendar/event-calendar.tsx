@@ -67,7 +67,22 @@ export function EventCalendar() {
             milestones: g.milestones
         }));
 
-        return { events: dayEvents, tasks: dayTasks, goals: dayGoals };
+        // Milestones
+        const dayMilestones = goals.flatMap(g =>
+            (g.milestones || [])
+                .filter((m: any) => m.targetDate && m.targetDate.startsWith(dateStr))
+                .map((m: any) => ({
+                    id: `${g.id}-m-${m.title}`, // detailed id
+                    title: m.title,
+                    type: 'milestone' as const,
+                    completed: m.completed,
+                    goalId: g.id,
+                    goalTitle: g.title,
+                    description: m.description
+                }))
+        );
+
+        return { events: dayEvents, tasks: dayTasks, goals: dayGoals, milestones: dayMilestones };
     };
 
     // Habits for the day (Logic from previous CalendarPage)
@@ -127,7 +142,7 @@ export function EventCalendar() {
     };
 
     const safeSelectedDate = selectedDate || new Date();
-    const { events: selectedEvents, tasks: selectedTasks, goals: selectedGoals } = getItemsForDate(safeSelectedDate);
+    const { events: selectedEvents, tasks: selectedTasks, goals: selectedGoals, milestones: selectedMilestones } = getItemsForDate(safeSelectedDate);
     const selectedHabits = getHabitsForDate(safeSelectedDate);
 
     const formData = { title: newTitle, time: newTime, link: newLink, description: newDescription };
@@ -190,6 +205,7 @@ export function EventCalendar() {
                         habits={selectedHabits}
                         tasks={selectedTasks}
                         goals={selectedGoals}
+                        milestones={selectedMilestones}
                         isAdding={isAdding}
                         setIsAdding={setIsAdding}
                         onAddEvent={handleAddEvent}
@@ -226,6 +242,7 @@ export function EventCalendar() {
                             habits={selectedHabits}
                             tasks={selectedTasks}
                             goals={selectedGoals}
+                            milestones={selectedMilestones}
                             isAdding={isAdding}
                             setIsAdding={setIsAdding}
                             onAddEvent={handleAddEvent}
@@ -268,8 +285,8 @@ export function EventCalendar() {
                                     return <div key={day.toString()} className="invisible" />;
                                 }
 
-                                const { events: dayEvents, tasks: dayTasks, goals: dayGoals } = getItemsForDate(day);
-                                const itemCount = dayEvents.length + dayTasks.length + dayGoals.length;
+                                const { events: dayEvents, tasks: dayTasks, goals: dayGoals, milestones: dayMilestones } = getItemsForDate(day);
+                                const itemCount = dayEvents.length + dayTasks.length + dayGoals.length + dayMilestones.length;
 
                                 return (
                                     <div
@@ -314,7 +331,7 @@ export function EventCalendar() {
                                                 </div>
                                             )}
 
-                                            {(itemCount > 2) && (dayEvents.length >= 2 || (dayEvents.length + (dayTasks.length > 0 ? 1 : 0) + (dayGoals.length > 0 ? 1 : 0) > 2)) && (
+                                            {(itemCount > 2) && (dayEvents.length >= 2 || (dayEvents.length + (dayTasks.length > 0 ? 1 : 0) + (dayGoals.length > 0 ? 1 : 0) + (dayMilestones.length > 0 ? 1 : 0) > 2)) && (
                                                 <span className="text-[10px] text-muted-foreground pl-1">
                                                     +{itemCount - 2} more
                                                 </span>

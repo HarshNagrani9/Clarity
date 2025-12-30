@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
@@ -29,6 +30,23 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
     const [newMilestoneDesc, setNewMilestoneDesc] = useState("");
 
     const handleAddMilestone = () => {
+        if (!newMilestone.trim()) return;
+
+        // Validation: Must have a goal date to validate against (optional, but strict per request)
+        if (targetDate && newMilestoneDate && newMilestoneDate > targetDate) {
+            toast.error(`Milestone date cannot be after the goal target date (${targetDate}).`);
+            return;
+        }
+
+        // Validation: Chronological Order
+        if (newMilestoneDate && milestones.length > 0) {
+            const lastMilestone = milestones[milestones.length - 1];
+            if (lastMilestone.targetDate && newMilestoneDate <= lastMilestone.targetDate) {
+                toast.error("Milestones must be strictly chronological (after the previous one).");
+                return;
+            }
+        }
+
         if (newMilestone.trim()) {
             setMilestones([...milestones, {
                 title: newMilestone.trim(),
@@ -47,6 +65,29 @@ export function AddGoalDialog({ onAdd }: { onAdd: (goal: Omit<Goal, "id" | "comp
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Validation Logic: Safety check before submitting
+        if (targetDate && milestones.length > 0) {
+            for (const m of milestones) {
+                if (m.targetDate && m.targetDate > targetDate) {
+                    toast.error(`Milestone "${m.title}" cannot be after the goal deadline (${targetDate}).`);
+                    return;
+                }
+            }
+        }
+
+        // Chronological Order Validation
+        for (let i = 0; i < milestones.length - 1; i++) {
+            const current = milestones[i];
+            const next = milestones[i + 1];
+            if (current.targetDate && next.targetDate) {
+                if (current.targetDate >= next.targetDate) {
+                    toast.error(`Milestone "${current.title}" must come before "${next.title}".`);
+                    return;
+                }
+            }
+        }
+
         onAdd({
             title,
             targetDate: targetDate || undefined,

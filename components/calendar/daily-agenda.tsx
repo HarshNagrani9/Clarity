@@ -1,4 +1,4 @@
-import { Trash2, Link as LinkIcon, Plus, CheckCircle2, Circle } from "lucide-react";
+import { Trash2, Link as LinkIcon, Plus, CheckCircle2, Circle, Flag, Target } from "lucide-react";
 import { isBefore, startOfToday, isAfter } from "date-fns";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
 interface DailyAgendaProps {
-
     date: Date;
     events: any[];
     habits: any[];
     tasks: any[];
     goals: any[];
+    milestones?: any[]; // optional for now
     isAdding: boolean;
     setIsAdding: (val: boolean) => void;
     onAddEvent: (data: any) => Promise<void>;
@@ -33,21 +33,13 @@ interface DailyAgendaProps {
     onUpdateGoal?: (id: number, updates: any) => void;
 }
 
-const getPriorityColor = (priority: string) => {
-    switch (priority) {
-        case 'high': return 'bg-red-500';
-        case 'medium': return 'bg-yellow-500';
-        case 'low': return 'bg-blue-500';
-        default: return 'bg-gray-500';
-    }
-};
-
 export function DailyAgenda({
     date,
     events,
     habits,
     tasks,
     goals,
+    milestones = [],
     isAdding,
     setIsAdding,
     onAddEvent,
@@ -152,8 +144,8 @@ export function DailyAgenda({
                                 <div className="flex-1 space-y-1.5 py-1">
                                     <div className="flex justify-between items-start">
                                         <span className="font-bold text-base leading-none text-foreground">{event.title}</span>
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity -mt-2 -mr-2" onClick={() => onDeleteEvent(event.id)}>
-                                            <Trash2 className="h-4 w-4 text-muted-foreground hover:text-red-500" />
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-muted-foreground hover:text-red-500 -mt-2 -mr-2" onClick={() => onDeleteEvent(event.id)}>
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
                                     {event.description && (
@@ -170,6 +162,36 @@ export function DailyAgenda({
                     </div>
                 )}
             </div>
+
+            {/* Milestones Section */}
+            {milestones.length > 0 && (
+                <div className="space-y-2">
+                    <h4 className="font-semibold text-sm text-amber-500 flex items-center justify-between">
+                        Milestones <span className="text-[10px] bg-secondary px-1.5 rounded-full text-foreground">{milestones.length}</span>
+                    </h4>
+                    <div className="space-y-2">
+                        {milestones.map((milestone: any) => (
+                            <div
+                                key={milestone.id}
+                                className="flex items-start gap-4 text-sm p-4 rounded-xl border bg-card/50 shadow-sm"
+                            >
+                                <div className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center bg-amber-500/10 border border-amber-500 text-amber-500 mt-0.5">
+                                    <Flag className="w-3 h-3 fill-current" />
+                                </div>
+                                <div className="flex-1 space-y-1">
+                                    <span className="font-bold text-foreground block">{milestone.title}</span>
+                                    <span className="text-xs text-muted-foreground block">
+                                        Goal: <span className="font-medium text-foreground">{milestone.goalTitle}</span>
+                                    </span>
+                                    {milestone.description && (
+                                        <p className="text-xs text-muted-foreground pt-1">{milestone.description}</p>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
 
             {/* Habits Section */}
             {habits.length > 0 && (
@@ -266,29 +288,14 @@ export function DailyAgenda({
                             return (
                                 <div
                                     key={`g-${goal.id}`}
-                                    onClick={() => {
-                                        if (onToggleGoal) {
-                                            if (!goal.completed) {
-                                                // Check milestones
-                                                const milestones = goal.milestones || [];
-                                                const hasPending = milestones.some((m: any) => !m.completed);
-                                                if (hasPending) {
-                                                    toast.error("Complete all milestones first!");
-                                                    return;
-                                                }
-                                                confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-                                            }
-                                            onToggleGoal(goal.id);
-                                        }
-                                    }}
-                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all cursor-pointer hover:bg-accent active:scale-[0.98] select-none",
+                                    className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all select-none",
                                         isMissed && "border-red-500/50 bg-red-500/5"
                                     )}
                                 >
                                     <div className={cn("w-5 h-5 rounded-full shrink-0 flex items-center justify-center transition-colors border",
-                                        goal.completed ? "bg-green-500 border-green-500 text-white" : (isMissed ? "bg-red-500 border-red-500 text-white" : "bg-transparent border-zinc-500 text-transparent")
+                                        goal.completed ? "bg-green-500 border-green-500 text-white" : "bg-purple-500/10 border-purple-500 text-purple-500"
                                     )} >
-                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        {goal.completed ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Target className="w-3.5 h-3.5" />}
                                     </div>
                                     <span className={cn("flex-1",
                                         goal.completed && "line-through text-muted-foreground",

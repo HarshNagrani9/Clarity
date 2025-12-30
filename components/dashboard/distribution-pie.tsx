@@ -33,7 +33,8 @@ export function DistributionPie() {
                     ))}
                 </Pie>
                 <Tooltip
-                    contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: '#1f2937', color: '#fff' }}
+                    contentStyle={{ borderRadius: '8px', border: 'none', backgroundColor: 'var(--card)', color: 'var(--card-foreground)', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    itemStyle={{ color: 'var(--card-foreground)' }}
                 />
                 <Legend verticalAlign="bottom" height={36} />
             </PieChart>
