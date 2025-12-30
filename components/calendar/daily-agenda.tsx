@@ -1,5 +1,5 @@
 import { Trash2, Link as LinkIcon, Plus, CheckCircle2, Circle, Flag, Target } from "lucide-react";
-import { isBefore, startOfToday, isAfter } from "date-fns";
+import { isBefore, startOfToday, isAfter, isSameDay } from "date-fns";
 import confetti from "canvas-confetti";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -204,8 +204,8 @@ export function DailyAgenda({
                                 <div
                                     key={habit.id}
                                     onClick={() => {
-                                        if (isAfter(date, startOfToday())) {
-                                            toast.error("Cannot complete habits for future dates");
+                                        if (!isSameDay(date, startOfToday())) {
+                                            toast.error("Cannot modify habits for past/future dates");
                                             return;
                                         }
                                         if (onToggleHabit) {
@@ -216,8 +216,8 @@ export function DailyAgenda({
                                         }
                                     }}
                                     className={cn("flex items-center gap-3 text-sm p-3 rounded-md border bg-card/50 transition-all select-none",
-                                        isAfter(date, startOfToday()) ? "opacity-50 cursor-not-allowed" : "cursor-pointer hover:bg-accent active:scale-[0.98]",
-                                        isMissed && "border-red-500/50 bg-red-500/5"
+                                        !isSameDay(date, startOfToday()) ? "opacity-75 cursor-not-allowed" : "cursor-pointer hover:bg-accent active:scale-[0.98]",
+                                        isMissed && "border-red-500/50 bg-red-500/5 opacity-100"
                                     )}
                                 >
                                     <div className={cn("w-5 h-5 rounded-full shrink-0 flex items-center justify-center transition-colors border",
