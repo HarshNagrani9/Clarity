@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
+import { ModeToggle } from "@/components/mode-toggle";
 
 const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -70,6 +71,10 @@ export function Sidebar({ className, onNavClick }: { className?: string; onNavCl
             </div>
 
             <div className="p-4 border-t border-sidebar-border">
+                <div className="flex items-center justify-between px-2 mb-4">
+                    <span className="text-xs font-medium text-muted-foreground">Theme</span>
+                    <ModeToggle />
+                </div>
                 <div className="mb-4 px-2">
                     <p className="text-xs font-medium text-muted-foreground">Signed in as</p>
                     <p className="text-sm font-medium truncate" title={user?.email || ""}>

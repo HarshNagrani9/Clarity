@@ -27,7 +27,9 @@ export const metadata: Metadata = {
 
 import { AppProvider } from "@/lib/store";
 
-// ... (imports)
+import { ThemeProvider } from "@/components/theme-provider";
+
+// ...
 
 export default function RootLayout({
   children,
@@ -35,11 +37,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
-        <AppProvider>
-          {children}
-        </AppProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
