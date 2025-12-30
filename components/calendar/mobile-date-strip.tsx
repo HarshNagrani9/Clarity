@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { format, isSameDay, isToday } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Plus } from "lucide-react";
@@ -13,16 +13,30 @@ interface MobileDateStripProps {
 }
 
 export function MobileDateStrip({ days, selectedDate, onSelectDate, getItemsForDate, onAddClick }: MobileDateStripProps) {
+    const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (selectedDate && scrollContainerRef.current) {
+            const selectedId = `date-strip-${format(selectedDate, 'yyyy-MM-dd')}`;
+            const element = document.getElementById(selectedId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+        }
+    }, [selectedDate]);
+
     return (
-        <div className="flex overflow-x-auto gap-3 pb-4 px-2 scrollbar-hide snap-x pt-2">
+        <div ref={scrollContainerRef} className="flex overflow-x-auto gap-3 pb-4 px-2 scrollbar-hide snap-x pt-2">
             {days.map((day) => {
                 const { events, tasks, goals } = getItemsForDate(day);
                 const hasItems = events.length > 0 || tasks.length > 0 || goals.length > 0;
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
+                const dayId = `date-strip-${format(day, 'yyyy-MM-dd')}`;
 
                 return (
                     <div
                         key={day.toISOString()}
+                        id={dayId}
                         onClick={() => onSelectDate(day)}
                         className={cn(
                             "group relative flex flex-col items-center justify-between min-w-[4.5rem] w-[4.5rem] h-[5.5rem] p-2 rounded-2xl border transition-all snap-center shrink-0 shadow-sm",
