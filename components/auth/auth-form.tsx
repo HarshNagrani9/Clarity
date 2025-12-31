@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { ForgotPasswordDialog } from "@/components/auth/forgot-password-dialog";
 
 interface AuthFormProps {
     mode: "signin" | "signup";
@@ -183,6 +184,11 @@ export function AuthForm({ mode }: AuthFormProps) {
                             required
                         />
                     </div>
+                    {mode === "signin" && (
+                        <div className="flex justify-end">
+                            <ForgotPasswordDialog />
+                        </div>
+                    )}
                     {otpSent && (
                         <div className="grid gap-2">
                             <Label htmlFor="otp" className="uppercase text-[10px] font-bold tracking-[0.2em] text-muted-foreground/70 mb-1.5">Verification Code</Label>

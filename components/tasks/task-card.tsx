@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import confetti from "canvas-confetti";
 import { isBefore, startOfDay } from "date-fns";
 
 interface TaskCardProps {
@@ -37,7 +38,18 @@ export function TaskCard({ task, onToggle, onUpdate, onDelete }: TaskCardProps) 
     };
 
     const handleProgressChange = (values: number[]) => {
-        onUpdate(task.id, { progress: values[0] });
+        const newProgress = values[0];
+        onUpdate(task.id, { progress: newProgress });
+        if (newProgress === 100) {
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, colors: ['#3b82f6', '#22d3ee'] });
+        }
+    };
+
+    const handleToggle = () => {
+        if (!task.completed) {
+            confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 }, colors: ['#3b82f6', '#22d3ee'] });
+        }
+        onToggle(task.id);
     };
 
     return (
@@ -51,7 +63,7 @@ export function TaskCard({ task, onToggle, onUpdate, onDelete }: TaskCardProps) 
             <CardContent className="flex items-center p-4 gap-4">
                 <Checkbox
                     checked={task.completed}
-                    onCheckedChange={() => onToggle(task.id)}
+                    onCheckedChange={handleToggle}
                     className="h-5 w-5 mt-1 self-start"
                 />
                 <div className="flex-1 space-y-3">

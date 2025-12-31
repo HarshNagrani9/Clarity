@@ -34,7 +34,8 @@ export function AddTaskDialog({ onAdd }: { onAdd: (task: Omit<Task, "id" | "comp
         onAdd({
             title,
             priority,
-            dueDate: dueDate || undefined
+            dueDate: dueDate || undefined,
+            progress: 0
         });
         setOpen(false);
         setTitle("");

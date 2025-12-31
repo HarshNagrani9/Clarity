@@ -1,12 +1,24 @@
 "use client";
 
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, User as UserIcon, LogOut, Settings } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { Sidebar } from "@/components/layout/sidebar";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { auth } from "@/lib/firebase";
+import { signOut } from "firebase/auth";
+import { useRouter } from "next/navigation";
+import Link from "next/link"; // Ensure Link is imported
 
 import { useApp } from "@/lib/store";
 import { NotificationToggle } from "@/components/notifications/push-manager";
@@ -46,16 +58,34 @@ export function Header() {
             <div className="flex items-center gap-4">
                 <NotificationToggle />
 
-                <div className="flex items-center gap-3 pl-4 border-l">
-                    <div className="text-right hidden sm:block">
-                        <p className="text-sm font-medium leading-none">{displayName}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{email}</p>
-                    </div>
-                    <Avatar className="h-9 w-9 border-2 border-primary/10 cursor-pointer hover:border-primary/50 transition-colors">
-                        <AvatarImage src="" alt={displayName} />
-                        <AvatarFallback>{initials}</AvatarFallback>
-                    </Avatar>
-                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <div className="flex items-center gap-3 pl-4 border-l cursor-pointer">
+                            <div className="text-right hidden sm:block">
+                                <p className="text-sm font-medium leading-none">{displayName}</p>
+                                <p className="text-xs text-muted-foreground mt-1">{email}</p>
+                            </div>
+                            <Avatar className="h-9 w-9 border-2 border-primary/10 hover:border-primary/50 transition-colors">
+                                <AvatarImage src="" alt={displayName} />
+                                <AvatarFallback>{initials}</AvatarFallback>
+                            </Avatar>
+                        </div>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                            <Link href="/profile" className="cursor-pointer">
+                                <UserIcon className="mr-2 h-4 w-4" />
+                                <span>Profile</span>
+                            </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => signOut(auth)}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Log out</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
     );

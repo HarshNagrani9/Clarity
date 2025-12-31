@@ -1,4 +1,5 @@
 "use client";
+// forcing rebuild
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -9,6 +10,7 @@ import { useEffect, useState } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useApp } from "@/lib/store";
 
 const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -21,6 +23,7 @@ const navItems = [
 export function Sidebar({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
     const pathname = usePathname();
     const router = useRouter();
+    const { userProfile } = useApp();
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
@@ -75,12 +78,12 @@ export function Sidebar({ className, onNavClick }: { className?: string; onNavCl
                     <span className="text-xs font-medium text-muted-foreground">Theme</span>
                     <ModeToggle />
                 </div>
-                <div className="mb-4 px-2">
+                <Link href="/profile" className="block mb-4 px-2 hover:bg-sidebar-accent/50 rounded-md py-2 transition-colors cursor-pointer" onClick={onNavClick}>
                     <p className="text-xs font-medium text-muted-foreground">Signed in as</p>
                     <p className="text-sm font-medium truncate" title={user?.email || ""}>
                         {user?.email || "Guest"}
                     </p>
-                </div>
+                </Link>
                 <Button
                     variant="ghost"
                     className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
