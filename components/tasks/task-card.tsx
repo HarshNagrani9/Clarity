@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { isBefore, startOfDay } from "date-fns";
@@ -35,6 +36,10 @@ export function TaskCard({ task, onToggle, onUpdate, onDelete }: TaskCardProps) 
         onUpdate(task.id, { dueDate: newDate });
     };
 
+    const handleProgressChange = (values: number[]) => {
+        onUpdate(task.id, { progress: values[0] });
+    };
+
     return (
         <Card
             className={cn(
@@ -47,23 +52,39 @@ export function TaskCard({ task, onToggle, onUpdate, onDelete }: TaskCardProps) 
                 <Checkbox
                     checked={task.completed}
                     onCheckedChange={() => onToggle(task.id)}
-                    className="h-5 w-5"
+                    className="h-5 w-5 mt-1 self-start"
                 />
-                <div className="flex-1 space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <span className={cn("font-medium", task.completed && "line-through text-muted-foreground")}>
-                            {task.title}
-                        </span>
-                        <Badge variant="secondary" className={cn("capitalize text-xs font-normal border-0", priorityColor[task.priority])}>
-                            {task.priority}
-                        </Badge>
-                        {isOverdue && (
-                            <Badge variant="destructive" className="flex items-center gap-1 text-[10px] px-1.5 h-5">
-                                <AlertCircle className="h-3 w-3" />
-                                Missed Deadline
+                <div className="flex-1 space-y-3">
+                    <div className="flex flex-col gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className={cn("font-medium", task.completed && "line-through text-muted-foreground")}>
+                                {task.title}
+                            </span>
+                            <Badge variant="secondary" className={cn("capitalize text-xs font-normal border-0", priorityColor[task.priority])}>
+                                {task.priority}
                             </Badge>
+                            {isOverdue && (
+                                <Badge variant="destructive" className="flex items-center gap-1 text-[10px] px-1.5 h-5">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Missed Deadline
+                                </Badge>
+                            )}
+                        </div>
+
+                        {!task.completed && (
+                            <div className="flex items-center gap-3 w-full max-w-xs">
+                                <span className="text-[10px] text-muted-foreground w-8 tabular-nums">{task.progress}%</span>
+                                <Slider
+                                    defaultValue={[task.progress]}
+                                    max={100}
+                                    step={10}
+                                    className="flex-1"
+                                    onValueCommit={handleProgressChange}
+                                />
+                            </div>
                         )}
                     </div>
+
                     {task.dueDate && (
                         <div className="flex items-center text-xs text-muted-foreground gap-1">
                             <Popover>
@@ -94,7 +115,7 @@ export function TaskCard({ task, onToggle, onUpdate, onDelete }: TaskCardProps) 
                         </div>
                     )}
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => onDelete(task.id)}>
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive self-start" onClick={() => onDelete(task.id)}>
                     <Trash2 className="h-4 w-4" />
                 </Button>
             </CardContent>

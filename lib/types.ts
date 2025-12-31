@@ -38,6 +38,7 @@ export interface Task {
     priority: 'low' | 'medium' | 'high';
     dueDate?: string;
     completed: boolean;
+    progress: number;
     completedAt?: string; // ISO date string
 }
 
