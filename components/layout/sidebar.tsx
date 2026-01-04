@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, CheckCircle, Target, Calendar, ListTodo, LogOut, MessageSquare } from "lucide-react";
+import { LayoutDashboard, CheckCircle, Target, Calendar, ListTodo, LogOut, MessageSquare, Bot } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
@@ -18,6 +18,7 @@ const navItems = [
     { href: "/goals", label: "Goals", icon: Target },
     { href: "/tasks", label: "Tasks", icon: ListTodo },
     { href: "/calendar", label: "Calendar", icon: Calendar },
+    { href: "/chat", label: "AI Assistant", icon: Bot },
 ];
 
 export function Sidebar({ className, onNavClick }: { className?: string; onNavClick?: () => void }) {
