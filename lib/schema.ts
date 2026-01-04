@@ -121,8 +121,19 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
     createdAt: timestamp('created_at').defaultNow(),
 });
 
+
+
+export const chats = pgTable('chats', {
+    id: text('id').primaryKey(), // using text/uuid
+    userId: text('user_id').notNull(),
+    title: text('title').notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+});
+
 export const messages = pgTable('messages', {
     id: serial('id').primaryKey(),
+    chatId: text('chat_id').references(() => chats.id, { onDelete: 'cascade' }),
     userId: text('user_id').notNull(),
     role: text('role').notNull(), // 'user' | 'model'
     content: text('content').notNull(),
