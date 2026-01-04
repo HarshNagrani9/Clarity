@@ -28,8 +28,25 @@ export default function ChatPage() {
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+            if (currentUser) {
+                try {
+                    const token = await currentUser.getIdToken();
+                    const res = await fetch("/api/chat", {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    const data = await res.json();
+                    if (data.messages) {
+                        setMessages(data.messages);
+                    }
+                } catch (error) {
+                    console.error("Failed to load chat history:", error);
+                    toast.error("Failed to load chat history");
+                }
+            } else {
+                setMessages([]);
+            }
         });
         return () => unsubscribe();
     }, []);
@@ -42,7 +59,7 @@ export default function ChatPage() {
     }, [messages, isLoading]);
 
     const handleSend = async () => {
-        if (!input.trim() || isLoading) return;
+        if (!input.trim() || isLoading || !user) return;
 
         const userMessage: Message = { role: "user", content: input.trim() };
         setMessages((prev) => [...prev, userMessage]);
@@ -55,9 +72,13 @@ export default function ChatPage() {
         }
 
         try {
+            const token = await user.getIdToken();
             const response = await fetch("/api/chat", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({
                     messages: [...messages, userMessage],
                 }),

@@ -22,6 +22,8 @@ export const users = pgTable('users', {
     displayName: text('display_name'),
     mobile: text('mobile'),
     preferences: jsonb('preferences').default({}), // Store user settings like view modes
+    xp: integer('xp').default(0),
+    level: integer('level').default(1),
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -116,5 +118,13 @@ export const pushSubscriptions = pgTable('push_subscriptions', {
     endpoint: text('endpoint').notNull().unique(),
     keys: jsonb('keys').notNull(),
     timezone: text('timezone').notNull().default('UTC'),
+    createdAt: timestamp('created_at').defaultNow(),
+});
+
+export const messages = pgTable('messages', {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    role: text('role').notNull(), // 'user' | 'model'
+    content: text('content').notNull(),
     createdAt: timestamp('created_at').defaultNow(),
 });
