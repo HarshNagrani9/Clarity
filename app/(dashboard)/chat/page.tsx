@@ -110,13 +110,13 @@ export default function ChatPage() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-2rem)] max-w-4xl mx-auto w-full p-4 gap-4">
-            <div className="flex items-center gap-2 pb-2 border-b">
+        <div className="flex flex-col h-[calc(100vh-4rem)] md:h-[calc(100vh-2rem)] max-w-4xl mx-auto w-full p-0 md:p-4 gap-4">
+            <div className="flex items-center gap-2 p-4 md:p-0 md:pb-2 border-b">
                 <Sparkles className="h-5 w-5 text-primary" />
                 <h1 className="text-xl font-semibold">AI Assistant</h1>
             </div>
 
-            <Card className="flex-1 overflow-hidden flex flex-col shadow-sm border-muted">
+            <Card className="flex-1 overflow-hidden flex flex-col border-0 shadow-none rounded-none md:border md:shadow-sm md:rounded-lg">
                 <div
                     ref={scrollRef}
                     className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
