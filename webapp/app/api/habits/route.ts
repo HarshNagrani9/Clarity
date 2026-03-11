@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { habits } from '@/lib/schema';
+import { habits, habitCompletions } from '@/lib/schema';
 import { eq } from 'drizzle-orm';
 import { verifyAuth } from '@/lib/auth-verify';
+import { calculateStreak } from '@/lib/streak';
 
 export async function GET(request: Request) {
     const decodedToken = await verifyAuth();
@@ -10,12 +11,34 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Ignore query param userId, use authenticated user
     const userId = decodedToken.uid;
 
     try {
         const userHabits = await db.select().from(habits).where(eq(habits.userId, userId));
-        return NextResponse.json(userHabits);
+
+        // Fetch all completions for this user in one query
+        const allCompletions = await db.select().from(habitCompletions).where(eq(habitCompletions.userId, userId));
+
+        // Group completions by habitId
+        const completionsByHabit: Record<number, string[]> = {};
+        for (const c of allCompletions) {
+            if (!completionsByHabit[c.habitId]) {
+                completionsByHabit[c.habitId] = [];
+            }
+            completionsByHabit[c.habitId].push(c.date);
+        }
+
+        // Reconstruct completedDates and streak for each habit
+        const enrichedHabits = userHabits.map(habit => {
+            const dates = completionsByHabit[habit.id] || [];
+            return {
+                ...habit,
+                completedDates: dates,
+                streak: calculateStreak(dates),
+            };
+        });
+
+        return NextResponse.json(enrichedHabits);
     } catch (error) {
         return NextResponse.json({ error: 'Failed to fetch habits' }, { status: 500 });
     }
