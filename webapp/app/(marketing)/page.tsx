@@ -301,9 +301,9 @@ const GuestCredentials = () => {
 
             <div className="space-y-3">
                 <div className="group bg-black/50 p-2 rounded border border-white/5 flex items-center justify-between hover:border-white/20 transition-colors">
-                    <div className="text-sm font-mono text-gray-400">guest@gmail.com</div>
+                    <div className="text-sm font-mono text-gray-400">canoje2819@lxbeta.com</div>
                     <button
-                        onClick={() => handleCopy('guest@gmail.com', 'email')}
+                        onClick={() => handleCopy('canoje2819@lxbeta.com', 'email')}
                         className="p-1.5 hover:bg-white/10 rounded text-gray-500 hover:text-white transition-colors"
                         title="Copy Email"
                     >
